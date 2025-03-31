@@ -20,3 +20,11 @@ class Document(db.Model):
 
     user = relationship("User", back_populates="documents")
     category = relationship("Category")
+    links = relationship("Link", back_populates="document")
+
+    # Beziehung zu Tags
+    tags = relationship(
+        "Tag",
+        secondary="document_tag",
+        back_populates="documents"
+    )

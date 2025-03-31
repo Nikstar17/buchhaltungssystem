@@ -4,10 +4,13 @@ import DashboardView from '@/views/DashboardView.vue';
 import LoginPage from '@/views/LoginView.vue';
 import RegisterComp from '@/views/RegisterView.vue';
 import DocumentsComp from '@/components/DocumentsComp.vue';
+import DocumentUpload from '@/components/DocumentUpload.vue'; // Import DocumentUpload component
+import { jwtDecode } from 'jwt-decode'; // Use named import
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {},
     {
       path: '/register',
       name: 'register',
@@ -41,6 +44,11 @@ const router = createRouter({
           path: 'documents',
           name: 'documents',
           component: DocumentsComp
+        },
+        {
+          path: 'documents/upload', // Define the route for DocumentUpload
+          name: 'document-upload',
+          component: DocumentUpload
         }
       ]
     }
@@ -53,41 +61,45 @@ import DashboardComp from '@/components/HomeComp.vue';
 // Navigation Guard
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    const token = localStorage.getItem('access_token');
-    const userStore = useUserStore();
+    const tokenExp = localStorage.getItem('access_token_exp');
+    const now = Date.now();
 
-    if (!token) {
-      next({ name: 'login' });
-      return;
-    }
+    if (tokenExp && now < tokenExp) {
+      next(); // Token is still valid
+    } else {
+      try {
+        const csrfToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('csrf_refresh_token='))
+          ?.split('=')[1];
 
-    try {
-      const response = await fetch(`${API_URL}/user`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+        if (!csrfToken) {
+          console.error('CSRF-Token fehlt.');
+          next({ name: 'login' });
+          return;
         }
-      });
 
-      if (response.ok) {
-        const userInfo = await response.json();
-        userStore.setEmail(userInfo.email);
-        userStore.setId(userInfo.id);
-        next();
-      } else if (response.status === 401) {
-        console.error('Token abgelaufen. Redirecting to login.');
-        localStorage.removeItem('access_token');
-        next({ name: 'login' });
-      } else {
-        console.error('Unauthorized. Redirecting to login.');
-        localStorage.removeItem('access_token');
+        const response = await fetch(`${API_URL}/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const decodedToken = jwtDecode(data.access_token);
+          localStorage.setItem('access_token_exp', decodedToken.exp * 1000); // Update expiration time
+          next();
+        } else {
+          console.error('Token konnte nicht erneuert werden. Redirecting to login.');
+          next({ name: 'login' });
+        }
+      } catch (error) {
+        console.error('Fehler bei der Token-Erneuerung:', error);
         next({ name: 'login' });
       }
-    } catch (error) {
-      console.error('Fehler bei der Token-Überprüfung:', error);
-      localStorage.removeItem('access_token');
-      next({ name: 'login' });
     }
   } else {
     next();

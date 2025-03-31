@@ -12,3 +12,4 @@ class Category(db.Model):
     type = Column(String(20))  # Einnahme, Ausgabe, gemischt
 
     user = relationship("User", back_populates="categories")
+    links = relationship("Link", back_populates="category")

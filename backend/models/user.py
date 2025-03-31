@@ -1,10 +1,13 @@
 from sqlalchemy.dialects.postgresql import UUID
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 import uuid
 import datetime
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import relationship
 from . import db
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -24,7 +27,8 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)

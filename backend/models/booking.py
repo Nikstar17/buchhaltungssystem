@@ -21,3 +21,4 @@ class Booking(db.Model):
     account = relationship("Account")
     category = relationship("Category")
     document = relationship("Document")
+    links = relationship("Link", back_populates="booking")

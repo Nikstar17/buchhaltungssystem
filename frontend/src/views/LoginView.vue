@@ -36,6 +36,7 @@
 import { ref } from 'vue';
 import API_URL from '@/api';
 import { useRouter } from 'vue-router';
+import { jwtDecode } from 'jwt-decode'; // Korrekte Import-Syntax
 
 const email = ref('');
 const password = ref('');
@@ -49,16 +50,19 @@ const login = async () => {
     body: JSON.stringify({
       email: email.value,
       password: password.value
-    })
+    }),
+    credentials: 'include'
   });
 
-  const result = await response.json();
+  const data = await response.json();
+  console.log(data);
+
   if (response.ok) {
-    localStorage.setItem('access_token', result.access_token);
+    const decodedToken = jwtDecode(data.access_token);
+    localStorage.setItem('access_token_exp', decodedToken.exp * 1000);
     router.push({ name: 'home' });
   } else {
-    message.value = result.message || 'Fehler bei der Anmeldung';
-    alert(message.value);
+    alert('Fehler bei der Anmeldung');
   }
 };
 </script>

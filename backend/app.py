@@ -12,7 +12,7 @@ from routes.user_bp import user_bp
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="http://localhost:5173", supports_credentials=True)
 app.config.from_object(Config)
 
 db.init_app(app)
