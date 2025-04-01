@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text
+from sqlalchemy import Column, String, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from . import db
@@ -7,6 +7,7 @@ class Supplier(db.Model):
     __tablename__ = "supplier"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     name = Column(String, nullable=False)         # Firmenname
     address = Column(Text, nullable=False)        # Anschrift
     tax_number = Column(String, nullable=True)    # Steuernummer (national)

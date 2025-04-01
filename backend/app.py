@@ -8,6 +8,7 @@ from routes.documents_bp import documents_bp
 from routes.user_bp import user_bp
 from routes.tax_rate_bp import tax_rate_bp
 from routes.uploads_bp import uploads_bp
+from routes.supplier_bp import supplier_bp
 
 
 app = Flask(__name__)
@@ -22,6 +23,7 @@ app.register_blueprint(user_bp)
 app.register_blueprint(documents_bp, url_prefix='/api')
 app.register_blueprint(tax_rate_bp, url_prefix='/api')
 app.register_blueprint(uploads_bp, url_prefix='/api')
+app.register_blueprint(supplier_bp, url_prefix='/api')
 
 if __name__ == "__main__":
     app.run(debug=True)

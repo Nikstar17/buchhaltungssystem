@@ -31,9 +31,11 @@ def get_documents():
 @jwt_required()
 def set_document():
     user_id = get_jwt_identity()
-    data = request.get_json()
+    data = request.form
+    print(data)
 
     if data is None:
+        print("None")
         return jsonify({"error": "Invalid JSON data"}), 400
 
     new_document = Document(
@@ -84,6 +86,7 @@ def set_document():
 
     except Exception as e:
         db.session.rollback()
+        print(e)
         return jsonify({"error": "An error occurred while adding new Document"}), 500
 
 

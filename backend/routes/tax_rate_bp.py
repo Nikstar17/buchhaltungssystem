@@ -43,7 +43,7 @@ def set_tax_rate():
     try:
         db.session.add(new_tax_rate)
         db.session.commit()
-        return jsonify({"message": "New Taxrate successfully"}), 200
+        return jsonify({"message": "New Taxrate successfully added"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "An error occurred while adding new Taxrate"}), 400

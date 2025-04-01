@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, defineEmits } from 'vue';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { XMarkIcon } from '@heroicons/vue/24/solid';
@@ -72,6 +72,7 @@ import { showSnackbarMessage } from '@/composables/useSnackbar';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+const emit = defineEmits(['file-selected']);
 const fileUrl = ref(null);
 const fileType = ref(null);
 const pdfCanvas = ref(null);
@@ -148,8 +149,7 @@ const handleFileChange = async (event) => {
     alert('Nur PDF, PNG oder JPG werden unterstützt.');
   }
 
-  // Upload the file to the server
-  await uploadFileToServer(file);
+  emit('file-selected', file);
 };
 
 const nextPage = async () => {
