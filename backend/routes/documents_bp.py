@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import Document, db
+from models import Document, Upload, LineItem, db
 
 documents_bp = Blueprint('documents_bp', __name__)
 
@@ -12,15 +12,16 @@ def get_documents():
     result = [
         {
             "id": str(doc.id),
-            "filename": doc.filename,
-            "upload_path": doc.upload_path,
-            "upload_date": doc.upload_date,
-            "beleg_datum": doc.beleg_datum,
-            "betrag": float(doc.betrag) if doc.betrag else None,
-            "kategorie_id": str(doc.kategorie_id) if doc.kategorie_id else None,
-            "beschreibung": doc.beschreibung,
-            "steuerart": doc.steuerart,
-            "tags": [tag.name for tag in doc.tags]  # Tags hinzufügen
+            "document_type": doc.document_type,
+            "status": doc.status,
+            "number": doc.number,
+            "document_date": doc.document_date,
+            "supplier_id": doc.supplier_id,
+            "delivery_date": doc.delivery_date,
+            "link_id": doc.link_id,
+            "due_date": doc.due_date,
+            "cost_center_id": doc.cost_center_id,
+            "currency_code": doc.currency_code,
         }
         for doc in documents
     ]
@@ -30,55 +31,61 @@ def get_documents():
 @jwt_required()
 def set_document():
     user_id = get_jwt_identity()
+    data = request.get_json()
 
-    # Check if a file is included in the request
-    if 'file' not in request.files:
-        return jsonify({"error": "File is required"}), 400
+    if data is None:
+        return jsonify({"error": "Invalid JSON data"}), 400
 
-    file = request.files['file']
-    description = request.form.get('description')
-    category = request.form.get('category')
-    beleg_datum = request.form.get('beleg_datum')
-    betrag = request.form.get('betrag')
-    steuerart = request.form.get('steuerart')
-    tags = request.form.get('tags')  # Kommagetrennte Tags
-
-    if not file or not description or not category or not beleg_datum or not betrag or not steuerart:
-        return jsonify({"error": "All fields are required"}), 400
-
-    # Save the file or process it as needed
-    filename = file.filename
-    upload_path = f'uploads/{filename}'  # Example path
-    file.save(upload_path)
-
-    # Beleg erstellen
     new_document = Document(
         user_id=user_id,
-        filename=filename,
-        upload_path=upload_path,
-        beleg_datum=beleg_datum,
-        betrag=betrag,
-        beschreibung=description,
-        steuerart=steuerart
+        document_type=data['document_type'],
+        status=data['status'],
+        number=data['number'],
+        document_date=data['document_date'],
+        supplier_id=data['supplier_id'],
+        delivery_date=data['delivery_date'],
+        link_id=data['link_id'],
+        due_date=data['due_date'],
+        cost_center_id=data['cost_center_id'],
+        currency_code=data['currency_code']
     )
-
-    # Tags verarbeiten
-    if tags:
-        tag_names = [tag.strip() for tag in tags.split(',')]
-        for tag_name in tag_names:
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.session.add(tag)
-            new_document.tags.append(tag)
 
     try:
         db.session.add(new_document)
         db.session.commit()
-        return jsonify({"message": "Document uploaded successfully", "document_id": str(new_document.id)}), 201
+
+        new_upload = Upload(
+            document_id=new_document.id,
+            filename=data['filename'],
+            file_path=data['file_path'],
+            mimetype=data['mimetype'],
+            file_size=data['file_size']
+        )
+
+        db.session.add(new_upload)
+        db.session.commit()
+
+        new_line_item = LineItem(
+            document_id=new_document.id,
+            line_number=data['line_number'],
+            description=data['description'],
+            quantity=data['quantity'],
+            unit_price=data['unit_price'],
+            total_price=data['total_price'],
+            category_id=data['category_id'],
+            tax_rate_id=data['tax_rate_id'],
+            account_id=data['account_id']
+        )
+
+        db.session.add(new_line_item)
+        db.session.commit()
+
+        return jsonify({"message": "Document, upload, and line item added successfully"}), 201
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "An error occurred while uploading the document"}), 500
+        return jsonify({"error": "An error occurred while adding new Document"}), 500
+
 
 @documents_bp.route('/documents/<id>', methods=['GET'])
 @jwt_required()

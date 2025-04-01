@@ -1,25 +1,51 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token, set_access_cookies, set_refresh_cookies, unset_jwt_cookies
-from models  import db, User
-from uuid import UUID
+from flask_jwt_extended import (
+    create_access_token, jwt_required, get_jwt_identity,
+    create_refresh_token, set_access_cookies,
+    set_refresh_cookies, unset_jwt_cookies
+)
+from models import db, User
+import os
+from cryptography.fernet import Fernet
 
 user_bp = Blueprint('user_bp', __name__)
+
+def get_cipher():
+    key = os.environ.get('ENCRYPTION_KEY')
+    if not key:
+        raise ValueError("ENCRYPTION_KEY wurde nicht gesetzt!")
+    return Fernet(key.encode())
+
+def encrypt(plaintext: str) -> str:
+    cipher = get_cipher()
+    return cipher.encrypt(plaintext.encode()).decode()
+
+def decrypt(ciphertext: str) -> str:
+    cipher = get_cipher()
+    return cipher.decrypt(ciphertext.encode()).decode()
 
 @user_bp.route('/register', methods=['POST'])
 def register_user():
     data = request.get_json()
+
     if data is None:
         return jsonify({"error": "Invalid JSON data"}), 400
 
-    if not data.get('email') or not data.get('password'):
-        return jsonify({"error": "Email and password are required"}), 400
-
-        # Prüfen, ob der Benutzer bereits existiert
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
-        return jsonify({"error": "User with this email already exists"}), 409  # 409 Conflict
+        return jsonify({"error": "User with this email already exists"}), 409
 
-    new_user = User(email=data['email'], password=data['password'])
+    new_user = User(
+        email=data['email'],
+        password=data['password'],  # Passwort wird bereits gehasht gespeichert
+        first_name=encrypt(data['first_name']),
+        last_name=encrypt(data['last_name']),
+        street=encrypt(data['street']),
+        house_number=encrypt(data['house_number']),
+        postal_code=encrypt(data['postal_code']),
+        city=encrypt(data['city']),
+        country=encrypt(data['country'])
+    )
 
     try:
         db.session.add(new_user)
@@ -32,22 +58,21 @@ def register_user():
 @user_bp.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json()
-    user = User.query.filter_by(email=data['email']).first()
 
     if data is None:
         return jsonify({"error": "Invalid JSON data"}), 400
+
+    user = User.query.filter_by(email=data['email']).first()
 
     if user and user.check_password(data['password']):
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
 
-        response = jsonify({
-            "message": "Login erfolgreich",
-            "access_token": access_token  # Access-Token im JSON-Response hinzufügen
-        })
-        set_access_cookies(response, access_token)  # Access-Token im Cookie speichern
-        set_refresh_cookies(response, refresh_token)  # Refresh-Token im Cookie speichern
+        response = jsonify({"message": "Login erfolgreich", "access_token": access_token})
+        set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
         return response
+
     return jsonify({"message": "Invalid credentials"}), 400
 
 @user_bp.route('/user', methods=['GET'])
@@ -61,7 +86,14 @@ def get_current_user():
 
     return jsonify({
         "id": str(user.id),
-        "email": user.email
+        "email": decrypt(user.email),
+        "first_name": decrypt(user.first_name),
+        "last_name": decrypt(user.last_name),
+        "street": decrypt(user.street),
+        "house_number": decrypt(user.house_number),
+        "postal_code": decrypt(user.postal_code),
+        "city": decrypt(user.city),
+        "country": decrypt(user.country)
     }), 200
 
 @user_bp.route('/user', methods=['DELETE'])
@@ -82,18 +114,17 @@ def delete_current_user():
         return jsonify({"error": "An error occurred while deleting the user"}), 500
 
 @user_bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)  # Nur mit Refresh-Token zugänglich
+@jwt_required(refresh=True)
 def refresh_token():
     user_id = get_jwt_identity()
     access_token = create_access_token(identity=user_id)
 
-    response = jsonify({"access_token": access_token})  # Return the new access token
-    set_access_cookies(response, access_token)  # Neues Access-Token im Cookie speichern
+    response = jsonify({"access_token": access_token})
+    set_access_cookies(response, access_token)
     return response
 
 @user_bp.route('/logout', methods=['POST'])
 def logout_user():
     response = jsonify({"message": "Logout erfolgreich"})
-    unset_jwt_cookies(response)  # Entfernt Access- und Refresh-Token-Cookies
+    unset_jwt_cookies(response)
     return response
-

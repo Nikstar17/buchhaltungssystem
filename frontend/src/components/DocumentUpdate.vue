@@ -135,9 +135,7 @@
     >
       <div class="bg-white p-6 rounded shadow-lg w-96">
         <h2 class="text-lg font-bold mb-4">Bestätigung</h2>
-        <p class="mb-4">
-          Sind Sie sicher, dass Sie dieses Dokument löschen möchten?
-        </p>
+        <p class="mb-4">Sind Sie sicher, dass Sie dieses Dokument löschen möchten?</p>
         <div class="flex justify-end space-x-4">
           <button
             @click="showDeleteModal = false"
@@ -173,8 +171,8 @@ import API_URL from '@/api';
 const props = defineProps({
   document: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['document-updated', 'document-deleted']);
@@ -188,7 +186,7 @@ const formData = reactive({
   lieferdatum: '',
   lieferant: '',
   kostenstelle: '',
-  tags: ''
+  tags: '',
 });
 
 const showSnackbar = ref(false);
@@ -208,7 +206,7 @@ const displaySnackbar = (message, type = 'success') => {
 // Watch for changes in the document prop and update the form fields
 watch(
   () => props.document,
-  newDocument => {
+  (newDocument) => {
     if (newDocument) {
       formData.beschreibung = newDocument.beschreibung || '';
       formData.kategorie_id = newDocument.kategorie_id || '';
@@ -245,86 +243,18 @@ const updateDocument = async () => {
   try {
     const payload = {
       ...formData,
-      beleg_datum: formData.beleg_datum
-        ? new Date(formData.beleg_datum).toISOString()
-        : null
+      beleg_datum: formData.beleg_datum ? new Date(formData.beleg_datum).toISOString() : null,
     };
 
-    // Extract CSRF token from cookies
-    const csrfToken = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
-
-    if (!csrfToken) {
-      displaySnackbar(
-        'CSRF-Token fehlt. Bitte melden Sie sich erneut an.',
-        'error'
-      );
-      window.location.href = '/login';
-      return;
-    }
-
-    let response = await fetch(
-      `${API_URL}/api/documents/${props.document.id}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken
-        },
-        body: JSON.stringify(payload),
-        credentials: 'include'
-      }
-    );
-
-    if (response.status === 401) {
-      // Attempt to refresh the token
-      const refreshToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_refresh_token='))
-        ?.split('=')[1];
-
-      if (!refreshToken) {
-        displaySnackbar(
-          'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
-          'error'
-        );
-        window.location.href = '/login';
-        return;
-      }
-
-      const refreshResponse = await fetch(`${API_URL}/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'X-CSRF-TOKEN': refreshToken
-        }
-      });
-
-      if (refreshResponse.ok) {
-        // Retry the original request after refreshing the token
-        response = await fetch(
-          `${API_URL}/api/documents/${props.document.id}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(payload),
-            credentials: 'include'
-          }
-        );
-      } else {
-        displaySnackbar(
-          'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
-          'error'
-        );
-        window.location.href = '/login';
-        return;
-      }
-    }
+    let response = await fetch(`${API_URL}/api/documents/${props.document.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify(payload),
+      credentials: 'include',
+    });
 
     if (response.ok) {
       displaySnackbar('Dokument erfolgreich aktualisiert.');
@@ -343,28 +273,22 @@ const deleteDocument = async () => {
   try {
     const csrfToken = document.cookie
       .split('; ')
-      .find(row => row.startsWith('csrf_access_token='))
+      .find((row) => row.startsWith('csrf_access_token='))
       ?.split('=')[1];
 
     if (!csrfToken) {
-      displaySnackbar(
-        'CSRF-Token fehlt. Bitte melden Sie sich erneut an.',
-        'error'
-      );
+      displaySnackbar('CSRF-Token fehlt. Bitte melden Sie sich erneut an.', 'error');
       window.location.href = '/login';
       return;
     }
 
-    const response = await fetch(
-      `${API_URL}/api/documents/${props.document.id}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': csrfToken
-        },
-        credentials: 'include'
-      }
-    );
+    const response = await fetch(`${API_URL}/api/documents/${props.document.id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      credentials: 'include',
+    });
 
     if (response.ok) {
       displaySnackbar('Dokument erfolgreich gelöscht.');
@@ -383,28 +307,22 @@ const confirmDelete = async () => {
   try {
     const csrfToken = document.cookie
       .split('; ')
-      .find(row => row.startsWith('csrf_access_token='))
+      .find((row) => row.startsWith('csrf_access_token='))
       ?.split('=')[1];
 
     if (!csrfToken) {
-      displaySnackbar(
-        'CSRF-Token fehlt. Bitte melden Sie sich erneut an.',
-        'error'
-      );
+      displaySnackbar('CSRF-Token fehlt. Bitte melden Sie sich erneut an.', 'error');
       window.location.href = '/login';
       return;
     }
 
-    const response = await fetch(
-      `${API_URL}/api/documents/${props.document.id}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': csrfToken
-        },
-        credentials: 'include'
-      }
-    );
+    const response = await fetch(`${API_URL}/api/documents/${props.document.id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      credentials: 'include',
+    });
 
     if (response.ok) {
       displaySnackbar('Dokument erfolgreich gelöscht.');

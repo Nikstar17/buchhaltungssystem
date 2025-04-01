@@ -1,26 +1,30 @@
+from sqlalchemy import Column, String, DateTime, Enum, text
 from sqlalchemy.dialects.postgresql import UUID
-from werkzeug.security import check_password_hash
-import uuid
-import datetime
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.orm import relationship
-from . import db
 from flask_bcrypt import Bcrypt
+import uuid
+from . import db
 
 bcrypt = Bcrypt()
 
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = "user"
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, nullable=False, server_default=text("NOW()"))
 
-    documents = relationship("Document", back_populates="user")
-    bookings = relationship("Booking", back_populates="user")
-    categories = relationship("Category", back_populates="user")
-    accounts = relationship("Account", back_populates="user")
+    email = Column(String, nullable=False, unique=True)    # E-Mail ist eindeutig
+    password_hash = Column(String, nullable=False)
+    role = Column(Enum("USER", "ADMIN", name="role"), nullable=False, server_default="USER")
 
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    street = Column(String, nullable=True)
+    house_number = Column(String, nullable=True)
+    postal_code = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    country = Column(String, nullable=True)
+
+    # Passwort-Property (schreibgeschützt)
     @property
     def password(self):
         raise AttributeError("Passwort kann nicht gelesen werden.")
@@ -29,6 +33,5 @@ class User(db.Model):
     def password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
-
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)

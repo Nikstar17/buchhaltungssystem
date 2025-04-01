@@ -57,3 +57,6 @@ venv.bak/
 
 # Prettier
 .prettierrc
+
+# Uploads
+backend/uploads/

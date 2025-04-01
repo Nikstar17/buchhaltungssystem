@@ -3,11 +3,20 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 from .user import User
+from .currency import Currency
+from .supplier import Supplier
+from .link import Link
+from .cost_center import CostCenter
 from .document import Document
-from .booking import Booking
+from .payment import Payment
+from .bank_account import BankAccount
+from .tags import Tag
+from .document_tags import DocumentTag
 from .category import Category
+from .tax_rate import TaxRate
+from .chart_of_accounts import ChartOfAccounts
 from .account import Account
-from .costcenter import CostCenter
-from .link import Link  # Sicherstellen, dass Link importiert ist
-from .tag import Tag  # Sicherstellen, dass Tag importiert ist
-from .document_tag import document_tag  # Sicherstellen, dass document_tag importiert ist
+from .line_items import LineItem
+from .contacts import Contact
+from .uploads import Upload
+

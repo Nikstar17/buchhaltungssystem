@@ -26,7 +26,9 @@
       </form>
       <p class="mt-6 text-center text-sm text-gray-600">
         Noch kein Konto?
-        <a href="/register" class="text-blue-600 hover:underline">Hier registrieren</a>
+        <router-link to="/register" class="text-blue-600 hover:underline"
+          >Hier registrieren</router-link
+        >
       </p>
     </div>
   </div>
@@ -36,7 +38,7 @@
 import { ref } from 'vue';
 import API_URL from '@/api';
 import { useRouter } from 'vue-router';
-import { jwtDecode } from 'jwt-decode'; // Korrekte Import-Syntax
+import { jwtDecode } from 'jwt-decode';
 
 const email = ref('');
 const password = ref('');
@@ -49,13 +51,12 @@ const login = async () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email: email.value,
-      password: password.value
+      password: password.value,
     }),
-    credentials: 'include'
+    credentials: 'include',
   });
 
   const data = await response.json();
-  console.log(data);
 
   if (response.ok) {
     const decodedToken = jwtDecode(data.access_token);

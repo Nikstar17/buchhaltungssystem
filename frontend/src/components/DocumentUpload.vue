@@ -1,72 +1,151 @@
 <template>
   <div class="flex space-x-4 max-h-screen p-5">
     <div class="w-3/5 overflow-y-auto">
-      <PdfViewer :src="filePreview" />
+      <PdfViewer @file-uploaded="updateFileUploaded" />
     </div>
 
     <!-- Form Section -->
     <div class="w-2/5 overflow-y-auto">
-      <form @submit.prevent="uploadDocument" class="space-y-4">
+      <form ref="uploadForm" @submit.prevent="uploadDocument" class="space-y-4">
         <div>
-          <label class="block font-medium">Belegart</label>
-          <div class="flex space-x-2">
-            <button type="button" :class="categoryType === 'ausgabe' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded" @click="categoryType = 'ausgabe'">
-              Ausgabe
-            </button>
-            <button type="button" :class="categoryType === 'einnahme' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded" @click="categoryType = 'einnahme'">
-              Einnahme
-            </button>
+          <label class="block font-medium">Belegart *</label>
+          <div class="flex space-x-4">
+            <label
+              class="flex items-center space-x-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 focus-within:ring-2 focus-within:ring-blue-500"
+            >
+              <input
+                type="radio"
+                value="ausgabe"
+                v-model="documentDetails.document_type"
+                name="document_type"
+                required
+                class="absolute opacity-0"
+              />
+              <span
+                class="w-4 h-4 flex items-center justify-center border-2 border-gray-400 rounded-full"
+              >
+                <span
+                  v-if="documentDetails.document_type === 'ausgabe'"
+                  class="w-2 h-2 bg-blue-500 rounded-full"
+                ></span>
+              </span>
+              <span class="font-medium">Ausgabe</span>
+            </label>
+            <label
+              class="flex items-center space-x-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 focus-within:ring-2 focus-within:ring-blue-500"
+            >
+              <input
+                type="radio"
+                value="einnahme"
+                v-model="documentDetails.document_type"
+                name="document_type"
+                class="absolute opacity-0"
+              />
+              <span
+                class="w-4 h-4 flex items-center justify-center border-2 border-gray-400 rounded-full"
+              >
+                <span
+                  v-if="documentDetails.document_type === 'einnahme'"
+                  class="w-2 h-2 bg-blue-500 rounded-full"
+                ></span>
+              </span>
+              <span class="font-medium">Einnahme</span>
+            </label>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="belegnummer" class="block font-medium">Belegnummer *</label>
+            <label for="number" class="block font-medium">Belegnummer *</label>
             <input
               type="text"
-              id="belegnummer"
-              v-model="belegnummer"
+              id="number"
+              v-model="documentDetails.number"
               required
               placeholder="Belegnummer eingeben"
               class="border border-gray-300 rounded px-3 py-2 w-full focus:invalid:border-red-500"
             />
           </div>
           <div>
-            <label for="beleg_datum" class="block font-medium">Belegdatum</label>
-            <input type="date" id="beleg_datum" v-model="belegDatum" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="document_date" class="block font-medium">Belegdatum *</label>
+            <input
+              type="date"
+              id="document_date"
+              v-model="documentDetails.document_date"
+              required
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="lieferant" class="block font-medium">Lieferant</label>
-            <input type="text" id="lieferant" v-model="lieferant" placeholder="Lieferant eingeben" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="supplier_id" class="block font-medium">Lieferant *</label>
+            <input
+              type="text"
+              id="supplier_id"
+              v-model="documentDetails.supplier_id"
+              required
+              placeholder="Lieferant eingeben"
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
           <div>
-            <label for="lieferdatum" class="block font-medium">Lieferdatum</label>
-            <input type="date" id="lieferdatum" v-model="lieferdatum" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="delivery_date" class="block font-medium">Lieferdatum *</label>
+            <input
+              type="date"
+              id="delivery_date"
+              v-model="documentDetails.delivery_date"
+              required
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="verknuepfung" class="block font-medium">Verknüpfung</label>
-            <input type="text" id="verknuepfung" v-model="verknuepfung" placeholder="Verknüpfung eingeben" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="link_id" class="block font-medium">Verknüpfung</label>
+            <input
+              type="text"
+              id="link_id"
+              v-model="documentDetails.link_id"
+              placeholder="link_ids (Coming soon)"
+              disabled
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
           <div>
-            <label for="faelligkeit" class="block font-medium">Fälligkeit</label>
-            <input type="date" id="faelligkeit" v-model="faelligkeit" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="due_date" class="block font-medium">Fälligkeit</label>
+            <input
+              type="date"
+              id="due_date"
+              v-model="documentDetails.due_date"
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="kostenstelle" class="block font-medium">Kostenstelle</label>
-            <input type="text" id="kostenstelle" v-model="kostenstelle" placeholder="Kostenstelle eingeben" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <label for="cost_center_id" class="block font-medium">Kostenstelle</label>
+            <input
+              type="text"
+              id="cost_center_id"
+              v-model="documentDetails.cost_center_id"
+              placeholder="cost_center_id (Coming soon)"
+              disabled
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
           <div>
             <label for="tags" class="block font-medium">Tags</label>
-            <input type="text" id="tags" v-model="tags" placeholder="Tags eingeben (kommagetrennt)" class="border border-gray-300 rounded px-3 py-2 w-full" />
+            <input
+              type="text"
+              id="tags"
+              v-model="documentDetails.tags"
+              placeholder="Tags eingeben (kommagetrennt)"
+              class="border border-gray-300 rounded px-3 py-2 w-full"
+            />
           </div>
         </div>
         <br />
@@ -78,32 +157,103 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label :for="'betrag-' + index" class="block font-medium">Betrag</label>
-              <input type="number" :id="'betrag-' + index" v-model="position.betrag" step="0.01" placeholder="Betrag eingeben" class="border border-gray-300 rounded px-3 py-2 w-full" />
-            </div>
-            <div>
-              <label :for="'description-' + index" class="block font-medium">Beschreibung</label>
-              <input type="text" :id="'description-' + index" v-model="position.description" placeholder="Beschreibung eingeben" class="border border-gray-300 rounded px-3 py-2 w-full" />
+              <label :for="'description-' + index" class="block font-medium">Beschreibung *</label>
+              <input
+                type="text"
+                :id="'description-' + index"
+                v-model="position.description"
+                required
+                placeholder="Beschreibung eingeben"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              />
             </div>
             <div>
               <label :for="'category_name-' + index" class="block font-medium">Kategorie</label>
-              <input type="text" :id="'category_name-' + index" v-model="position.categoryName" placeholder="Kategorie eingeben (z.B. Miete)" class="border border-gray-300 rounded px-3 py-2 w-full" />
+              <input
+                type="text"
+                :id="'category_name-' + index"
+                v-model="position.categoryName"
+                placeholder="Kategorie eingeben (z.B. Miete)"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              />
             </div>
             <div>
-              <label :for="'umsatzsteuer-' + index" class="block font-medium">Umsatzsteuer</label>
-              <select :id="'umsatzsteuer-' + index" v-model="position.umsatzsteuer" class="border border-gray-300 rounded px-3 py-2 w-full">
-                <option value="" disabled>Umsatzsteuer</option>
-                <option value="standard">19%</option>
-                <option value="ermäßigt">Ermäßigt</option>
-                <option value="steuerfrei">Steuerfrei</option>
+              <label :for="'umsatzsteuer-' + index" class="block font-medium">Umsatzsteuer *</label>
+              <select
+                :id="'umsatzsteuer-' + index"
+                v-model="position.umsatzsteuer"
+                required
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+                @change="handleTaxRateChange($event, index)"
+              >
+                <option value="" disabled>Umsatzsteuer auswählen</option>
+                <option v-for="rate in taxRates" :key="rate.id" :value="rate.id">
+                  {{ rate.name }}
+                </option>
+                <option value="add-new">+ Neue Steuerregel hinzufügen</option>
               </select>
             </div>
-            <button v-if="index > 0" type="button" @click="removePosition(index)" class="col-span-2 bg-gray-200 text-red-700 px-4 py-2 rounded hover:bg-gray-300">Position entfernen</button>
+            <div>
+              <label :for="'menge-' + index" class="block font-medium">Menge *</label>
+              <input
+                type="number"
+                :id="'menge-' + index"
+                v-model.number="position.menge"
+                required
+                step="1"
+                min="0"
+                placeholder="Menge"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              />
+            </div>
+            <div>
+              <label :for="'einzelpreis-' + index" class="block font-medium">Einzelpreis *</label>
+              <input
+                type="number"
+                :id="'einzelpreis-' + index"
+                v-model.number="position.einzelpreis"
+                required
+                step="0.01"
+                placeholder="Einzelpreis"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              />
+            </div>
+            <div>
+              <label class="block font-medium">Gesamtpreis</label>
+              <input
+                type="number"
+                name="total_price"
+                :value="(position.menge || 0) * (position.einzelpreis || 0)"
+                class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100"
+                disabled
+              />
+            </div>
+            <button
+              v-if="index > 0"
+              type="button"
+              @click="removePosition(index)"
+              class="col-span-2 bg-gray-200 text-red-700 px-4 py-2 rounded hover:bg-gray-300"
+            >
+              Position entfernen
+            </button>
           </div>
         </div>
+
         <div class="flex justify-between">
-          <button type="button" @click="addPosition" class="bg-gray-200 text-gray-700 px-4 py-2 rounded shadow hover:bg-gray-300">Position hinzufügen</button>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Hochladen</button>
+          <button
+            type="button"
+            @click="addPosition"
+            class="bg-gray-200 text-gray-700 px-4 py-2 rounded shadow hover:bg-gray-300"
+          >
+            Position hinzufügen
+          </button>
+          <button
+            type="button"
+            @click="handleUploadClick"
+            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          >
+            Hochladen
+          </button>
         </div>
       </form>
     </div>
@@ -117,131 +267,261 @@
   >
     {{ snackbarMessage }}
   </div>
+
+  <!-- Modal für neue Steuerregel -->
+  <div
+    v-if="showTaxRateModal"
+    class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div class="bg-white p-6 rounded shadow-lg w-1/3">
+      <h2 class="text-lg font-bold mb-4">Neue Steuerregel hinzufügen</h2>
+      <form @submit.prevent="addNewTaxRate">
+        <div class="mb-4">
+          <label for="taxRateName" class="block font-medium">Name der Steuerregel</label>
+          <input
+            type="text"
+            id="taxRateName"
+            v-model="newTaxRate.name"
+            required
+            placeholder='z.B. "USt 19%"'
+            class="border border-gray-300 rounded px-3 py-2 w-full"
+          />
+        </div>
+        <div class="mb-4">
+          <label for="taxRatePercentage" class="block font-medium">Steuersatz (%)</label>
+          <input
+            type="number"
+            id="taxRatePercentage"
+            v-model.number="newTaxRate.percentage"
+            required
+            step="0.01"
+            placeholder="Steuersatz eingeben"
+            class="border border-gray-300 rounded px-3 py-2 w-full"
+          />
+        </div>
+        <div class="mb-4">
+          <label for="taxRateValidForm" class="block font-medium">Gültig ab</label>
+          <input
+            type="date"
+            id="taxRateValidForm"
+            v-model="newTaxRate.valid_from"
+            required
+            class="border border-gray-300 rounded px-3 py-2 w-full"
+          />
+        </div>
+        <div class="flex justify-end space-x-4">
+          <button
+            type="button"
+            @click="closeTaxRateModal"
+            class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Abbrechen
+          </button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Speichern
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import API_URL from '@/api';
-import PdfViewer from './PdfViewer.vue'; // Import PdfViewer component
+import PdfViewer from './PdfViewer.vue';
+import {
+  showSnackbar,
+  snackbarMessage,
+  snackbarType,
+  showSnackbarMessage,
+} from '@/composables/useSnackbar';
 
-const emit = defineEmits(['document-uploaded']); // Define the event
+// Formular-Referenzen
+const uploadForm = ref(null); // Referenz auf das Upload-Formular
 
-const file = ref(null);
-const filePreview = ref(null); // Define filePreview
-const description = ref('');
-const categoryName = ref('');
-const categoryType = ref('');
-const belegDatum = ref('');
-const belegnummer = ref('');
-const betrag = ref('');
-const umsatzsteuer = ref('');
-const lieferdatum = ref('');
-const lieferant = ref('');
-const verknuepfung = ref('');
-const faelligkeit = ref('');
-const kostenstelle = ref('');
-const tags = ref('');
-const showSnackbar = ref(false); // State for showing the snackbar
-const snackbarMessage = ref('');
-const snackbarType = ref('success'); // State for snackbar type (success or error)
-const positions = ref([{ betrag: '', description: '', categoryName: '', umsatzsteuer: '' }]);
+// Reaktive Zustände für die Belegarten und Dokumentdaten
+const categoryType = ref(); // Belegart (Radio-Button Markierung)
+const positions = ref([{ betrag: '', description: '', categoryName: '', umsatzsteuer: '' }]); // Positionen (Buchungsdaten)
 
-const handleFileChange = event => {
-  const selectedFile = event.target.files[0];
-  if (!selectedFile) return;
+// Reaktive Zustände für Dokumenteninformationen
+const documentDetails = ref({
+  // Beleg
+  document_type: '',
+  status: 'OPEN',
+  number: '',
+  document_date: '',
+  supplier_id: '',
+  delivery_date: '',
+  link_id: '',
+  due_date: '',
+  cost_center_id: '',
+  currency_code: 'EUR', // TODO: Add dynamic currency selection in the future
 
-  file.value = selectedFile;
-  if (file.value.type === 'application/pdf') {
-    filePreview.value = URL.createObjectURL(file.value); // Generate preview URL for PDFs
-  } else {
-    filePreview.value = null; // Reset preview if not a PDF
-  }
+  // Belegpositionen
+  line_number: '',
+  description: '',
+  quantity: '',
+  unit_price: '',
+  total_price: '',
+  category_id: '',
+  tax_rate_id: '',
+  account_id: '',
+
+  // Upload
+  filename: '',
+  file_path: '',
+  mimetype: '',
+  file_size: '',
+});
+
+// Reaktive Zustände für Umsatzsteuer
+const taxRates = ref([]); // Optionen für das Umsatzsteuer-Dropdown
+const newTaxRate = ref({ name: '', percentage: '', valid_from: '' }); // Neue Umsatzsteuer-Daten
+
+// Modal- und Dateizustände
+const showTaxRateModal = ref(false); // Zeigt das Modal für neue Umsatzsteuer an
+const isFileUploaded = ref(false); // Prüft, ob ein Dokument hochgeladen wurde
+
+const updateFileUploaded = (fileDetails) => {
+  isFileUploaded.value = true;
+  // Update documentDetails with file information
+  documentDetails.value.filename = fileDetails.filename;
+  documentDetails.value.file_path = fileDetails.file_path;
+  documentDetails.value.mimetype = fileDetails.mimetype;
+  documentDetails.value.file_size = fileDetails.file_size;
 };
 
 const addPosition = () => {
-  positions.value.push({ betrag: '', description: '', categoryName: '', umsatzsteuer: '' });
+  positions.value.push({
+    betrag: '',
+    description: '',
+    categoryName: '',
+    umsatzsteuer: '',
+  });
 };
 
-const removePosition = index => {
+const removePosition = (index) => {
   if (index > 0) {
     positions.value.splice(index, 1);
   }
 };
 
+const handleTaxRateChange = (event, index) => {
+  if (event.target.value === 'add-new') {
+    showTaxRateModal.value = true;
+    positions.value[index].umsatzsteuer = ''; // Reset the selection
+  }
+};
+
+const closeTaxRateModal = () => {
+  showTaxRateModal.value = false;
+  newTaxRate.value = { name: '', value: '' };
+};
+
+const fetchTaxRates = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/tax_rates`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      taxRates.value = await response.json();
+    } else {
+      console.error('Fehler beim Abrufen der Umsatzsteuersätze');
+    }
+  } catch (error) {
+    console.error('API-Fehler:', error);
+  }
+};
+
+const addNewTaxRate = async () => {
+  try {
+    const csrfToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrf_access_token='))
+      ?.split('=')[1];
+
+    const response = await fetch(`${API_URL}/api/tax_rates`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify(newTaxRate.value),
+    });
+
+    if (response.ok) {
+      const createdTaxRate = await response.json();
+      taxRates.value.push(createdTaxRate);
+      fetchTaxRates();
+      closeTaxRateModal();
+    } else {
+      console.error('Fehler beim Hinzufügen der Steuerregel');
+    }
+  } catch (error) {
+    console.error('API-Fehler:', error);
+  }
+};
+
+const handleUploadClick = () => {
+  const form = uploadForm.value;
+
+  if (!form.reportValidity()) {
+    return;
+  }
+
+  if (!isFileUploaded.value) {
+    showSnackbarMessage('Bitte laden Sie zuerst eine Datei hoch');
+    return;
+  }
+
+  uploadDocument();
+};
+
 const uploadDocument = async () => {
-  if (
-    !file.value ||
-    !description.value ||
-    !categoryName.value ||
-    !categoryType.value ||
-    !belegDatum.value ||
-    !betrag.value ||
-    !steuerart.value ||
-    !lieferdatum.value ||
-    !lieferant.value ||
-    !verknuepfung.value ||
-    !faelligkeit.value ||
-    !kostenstelle.value ||
-    !tags.value
-  ) {
-    snackbarMessage.value = 'Bitte alle Felder ausfüllen.';
-    snackbarType.value = 'error';
-    showSnackbar.value = true;
-    setTimeout(() => {
-      showSnackbar.value = false;
-    }, 5000);
-    return;
-  }
-
-  if (!positions.value.length) {
-    snackbarMessage.value = 'Bitte mindestens eine Position hinzufügen.';
-    snackbarType.value = 'error';
-    showSnackbar.value = true;
-    setTimeout(() => {
-      showSnackbar.value = false;
-    }, 5000);
-    return;
-  }
-
   const formData = new FormData();
-  formData.append('file', file.value);
-  formData.append('description', description.value);
-  formData.append('category_name', categoryName.value);
-  formData.append('category_type', categoryType.value);
-  formData.append('beleg_datum', belegDatum.value);
-  formData.append('betrag', betrag.value);
-  formData.append('steuerart', steuerart.value);
-  formData.append('lieferdatum', lieferdatum.value);
-  formData.append('lieferant', lieferant.value);
-  formData.append('verknuepfung', verknuepfung.value);
-  formData.append('faelligkeit', faelligkeit.value);
-  formData.append('kostenstelle', kostenstelle.value);
-  formData.append('tags', tags.value);
+
+  // Füge die allgemeinen Dokumentdetails hinzu
+  formData.append('document_type', documentDetails.value.document_type);
+  formData.append('status', documentDetails.value.status);
+  formData.append('number', documentDetails.value.number);
+  formData.append('document_date', documentDetails.value.document_date);
+  formData.append('supplier_id', documentDetails.value.supplier_id);
+  formData.append('delivery_date', documentDetails.value.delivery_date);
+  formData.append('link_id', documentDetails.value.link_id);
+  formData.append('due_date', documentDetails.value.due_date);
+  formData.append('cost_center_id', documentDetails.value.cost_center_id);
+  formData.append('currency_code', documentDetails.value.currency_code);
+
+  // Füge die Upload-Daten hinzu
+  formData.append('filename', documentDetails.value.filename);
+  formData.append('file_path', documentDetails.value.file_path);
+  formData.append('mimetype', documentDetails.value.mimetype);
+  formData.append('file_size', documentDetails.value.file_size);
+
+  // Füge die Positionen als JSON-Array hinzu
   formData.append('positions', JSON.stringify(positions.value));
 
   try {
     const csrfToken = document.cookie
       .split('; ')
-      .find(row => row.startsWith('csrf_access_token='))
+      .find((row) => row.startsWith('csrf_access_token='))
       ?.split('=')[1];
 
     const response = await fetch(`${API_URL}/api/documents`, {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'X-CSRF-TOKEN': csrfToken
+        'X-CSRF-TOKEN': csrfToken,
       },
-      body: formData
+      body: formData,
     });
 
     if (response.ok) {
-      snackbarMessage.value = 'Beleg erfolgreich hochgeladen!';
-      snackbarType.value = 'success';
-      showSnackbar.value = true;
-
-      setTimeout(() => {
-        showSnackbar.value = false;
-      }, 5000);
+      showSnackbarMessage('Beleg erfolgreich hochgeladen!', 'success');
 
       file.value = null;
       description.value = '';
@@ -259,33 +539,31 @@ const uploadDocument = async () => {
       positions.value = [{ betrag: '', description: '', categoryName: '', Umsatzsteuer: '' }];
       document.getElementById('file').value = '';
 
-      emit('document-uploaded');
+      //emit('document-uploaded');
     } else if (response.status === 401) {
-      snackbarMessage.value = 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.';
-      snackbarType.value = 'error';
-      showSnackbar.value = true;
-      setTimeout(() => {
-        showSnackbar.value = false;
-      }, 5000);
+      showSnackbarMessage('Sitzung abglaufen', 'error');
       window.location.href = '/login';
     } else {
-      snackbarMessage.value = 'Fehler beim Hochladen des Belegs.';
-      snackbarType.value = 'error';
-      showSnackbar.value = true;
-      setTimeout(() => {
-        showSnackbar.value = false;
-      }, 5000);
+      showSnackbarMessage('Fehler beim hochladen', 'error');
     }
   } catch (error) {
     console.error('Upload-Fehler:', error);
-    snackbarMessage.value = 'Ein unerwarteter Fehler ist aufgetreten.';
-    snackbarType.value = 'error';
-    showSnackbar.value = true;
-    setTimeout(() => {
-      showSnackbar.value = false;
-    }, 5000);
+    showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten.', 'error');
   }
 };
+
+onMounted(() => {
+  fetchTaxRates();
+});
+
+// Watcher, um bei jeder Änderung in `documentDetails` etwas in der Konsole auszugeben
+watch(
+  documentDetails,
+  (newValue) => {
+    console.log(newValue);
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped></style>
