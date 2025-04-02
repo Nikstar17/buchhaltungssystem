@@ -526,6 +526,8 @@ const newSupplier = ref({
   phone: '',
 }); // Neue Lieferantendaten
 
+const tempFile = ref(null); // Temporäre Datei
+
 const addPosition = () => {
   positions.value.push({
     quantity: '',
@@ -675,6 +677,7 @@ const handleUploadClick = () => {
 };
 
 const updateFileUploaded = (fileDetails) => {
+  tempFile.value = fileDetails; // Temporäre Datei speichern
   isFileUploaded.value = true;
 
   documentDetails.value.filename = fileDetails.name;
@@ -697,11 +700,10 @@ const uploadDocument = async () => {
   formData.append('cost_center_id', documentDetails.value.cost_center_id);
   formData.append('currency_code', documentDetails.value.currency_code);
 
-  // Füge die Upload-Daten hinzu
-  formData.append('filename', documentDetails.value.filename);
-  formData.append('file_path', documentDetails.value.file_path);
-  formData.append('mimetype', documentDetails.value.mimetype);
-  formData.append('file_size', documentDetails.value.file_size);
+  // Füge die Datei hinzu
+  if (tempFile.value) {
+    formData.append('file', tempFile.value); // Datei an formData anhängen
+  }
 
   // Füge die Positionen hinzu, berechne total_price und setze line_number
   const positionsWithLineNumbers = positions.value.map((position, index) => ({
@@ -730,12 +732,10 @@ const uploadDocument = async () => {
       showSnackbarMessage('Beleg erfolgreich hochgeladen!', 'success');
       resetForm();
     } else {
-      await deleteUploadedFile(); // Lösche die Datei, wenn der Beleg-Upload fehlschlägt
       showSnackbarMessage('Fehler beim Hochladen des Belegs', 'error');
     }
   } catch (error) {
     console.error('Beleg-Upload-Fehler:', error);
-    await deleteUploadedFile(); // Lösche die Datei bei einem Fehler
     showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten.', 'error');
   }
 };

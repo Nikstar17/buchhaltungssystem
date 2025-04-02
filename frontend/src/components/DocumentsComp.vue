@@ -25,11 +25,11 @@
         <table v-if="documents.length > 0" class="min-w-full text-sm text-left">
           <thead class="bg-gray-100 border-b font-semibold">
             <tr>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Fälligkeit</th>
+              <th class="px-4 py-3">Belegnummer</th>
+              <th class="px-4 py-3">Lieferant/Kunde</th>
               <th class="px-4 py-3">Datum</th>
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Kategorie</th>
-              <th class="px-4 py-3">Betrag</th>
-              <th class="px-4 py-3">Tags</th>
             </tr>
           </thead>
           <tbody>
@@ -39,23 +39,20 @@
               class="border-b hover:bg-gray-50 cursor-pointer"
               @click="navigateToUpdate(document.id)"
             >
+              <td class="px-4 py-3">{{ document.status }}</td>
+              <td class="px-4 py-3">
+                {{ document.due_date ? calculateDaysUntilDue(document.due_date) : '-' }}
+              </td>
+              <td class="px-4 py-3">{{ document.number }}</td>
+              <td class="px-4 py-3">{{ getSupplierName(document.supplier_id) }}</td>
               <td class="px-4 py-3">
                 {{
-                  new Date(document.beleg_datum).toLocaleDateString('de-DE', {
-                    weekday: 'short',
+                  new Date(document.document_date).toLocaleDateString('de-DE', {
                     day: '2-digit',
-                    month: 'long',
+                    month: '2-digit',
                     year: 'numeric',
                   })
                 }}
-              </td>
-              <td class="px-4 py-3">{{ document.beschreibung }}</td>
-              <td class="px-4 py-3">{{ document.kategorie_id }}</td>
-              <td class="px-4 py-3">{{ document.betrag }} €</td>
-              <td class="px-4 py-3">
-                <ul>
-                  <li v-for="tag in document.tags" :key="tag">{{ tag }}</li>
-                </ul>
               </td>
             </tr>
           </tbody>
@@ -76,6 +73,7 @@ import API_URL from '@/api';
 
 const router = useRouter();
 const documents = ref([]);
+const suppliers = ref([]);
 
 const fetchDocuments = async () => {
   try {
@@ -87,15 +85,34 @@ const fetchDocuments = async () => {
     if (response.ok) {
       const data = await response.json();
       documents.value = data.sort((a, b) => new Date(b.beleg_datum) - new Date(a.beleg_datum));
-    } else if (response.status === 401) {
-      console.error('Nicht autorisiert. Bitte melden Sie sich erneut an.');
-      window.location.href = '/login';
     } else {
       console.error('Fehler beim Laden der Belege:', response.statusText);
     }
   } catch (error) {
     console.error('Fehler beim Abrufen der Belege:', error);
   }
+};
+
+const fetchSuppliers = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/suppliers`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      suppliers.value = await response.json();
+    } else {
+      console.error('Fehler beim Abrufen der Lieferanten:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Lieferanten:', error);
+  }
+};
+
+const getSupplierName = (supplierId) => {
+  const supplier = suppliers.value.find((s) => s.id === supplierId);
+  return supplier ? supplier.name : 'Unbekannt';
 };
 
 const navigateToUpload = () => {
@@ -106,7 +123,10 @@ const navigateToUpdate = (documentId) => {
   router.push(`/documents/${documentId}`);
 };
 
-onMounted(fetchDocuments);
+onMounted(() => {
+  fetchDocuments();
+  fetchSuppliers();
+});
 </script>
 
 <style scoped></style>

@@ -1,11 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import DashboardView from '@/views/DashboardView.vue';
-import LoginPage from '@/views/LoginView.vue';
+import { jwtDecode } from 'jwt-decode';
 import RegisterComp from '@/views/RegisterView.vue';
+import LoginPage from '@/views/LoginView.vue';
+import DashboardView from '@/views/DashboardView.vue';
+import DashboardComp from '@/components/HomeComp.vue';
 import DocumentsComp from '@/components/DocumentsComp.vue';
-import DocumentUpload from '@/components/DocumentUpload.vue'; // Import DocumentUpload component
-import { jwtDecode } from 'jwt-decode'; // Use named import
+import DocumentDetails from '@/components/DocumentDetails.vue';
+import DocumentUpload from '@/components/DocumentUpload.vue';
+import API_URL from '@/api';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,12 +17,12 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: RegisterComp
+      component: RegisterComp,
     },
     {
       path: '/login',
       name: 'login',
-      component: LoginPage
+      component: LoginPage,
     },
     {
       path: '/logout',
@@ -27,7 +30,7 @@ const router = createRouter({
       beforeEnter: (to, from, next) => {
         localStorage.removeItem('access_token');
         next({ name: 'login' });
-      }
+      },
     },
     {
       path: '/dashboard',
@@ -38,29 +41,30 @@ const router = createRouter({
         {
           path: 'home',
           name: 'home',
-          component: DashboardComp
+          component: DashboardComp,
         },
         {
           path: 'documents',
           name: 'documents',
-          component: DocumentsComp
+          component: DocumentsComp,
+        },
+        {
+          path: '/documents/:id',
+          component: DocumentDetails,
         },
         {
           path: 'documents/upload', // Define the route for DocumentUpload
           name: 'document-upload',
-          component: DocumentUpload
-        }
-      ]
-    }
-  ]
+          component: DocumentUpload,
+        },
+      ],
+    },
+  ],
 });
-
-import API_URL from '@/api';
-import DashboardComp from '@/components/HomeComp.vue';
 
 // Navigation Guard
 router.beforeEach(async (to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     const tokenExp = localStorage.getItem('access_token_exp');
     const now = Date.now();
 
@@ -70,7 +74,7 @@ router.beforeEach(async (to, from, next) => {
       try {
         const csrfToken = document.cookie
           .split('; ')
-          .find(row => row.startsWith('csrf_refresh_token='))
+          .find((row) => row.startsWith('csrf_refresh_token='))
           ?.split('=')[1];
 
         if (!csrfToken) {
@@ -83,8 +87,8 @@ router.beforeEach(async (to, from, next) => {
           method: 'POST',
           credentials: 'include',
           headers: {
-            'X-CSRF-TOKEN': csrfToken
-          }
+            'X-CSRF-TOKEN': csrfToken,
+          },
         });
 
         if (response.ok) {

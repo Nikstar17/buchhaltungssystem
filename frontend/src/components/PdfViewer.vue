@@ -97,8 +97,6 @@ const renderPage = async (pageNumber) => {
 const handleFileChange = async (event) => {
   const file = event.target.files[0];
 
-  console.log('file.', file);
-
   if (!file) return;
 
   fileUploaded.value = true;

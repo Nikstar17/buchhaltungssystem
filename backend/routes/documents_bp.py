@@ -1,6 +1,18 @@
+import os
+from werkzeug.utils import secure_filename
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Document, Upload, LineItem, db
+
+UPLOAD_FOLDER = 'uploads'  # Ordner, in dem die Dateien gespeichert werden
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}  # Erlaubte Dateitypen
+
+# Stelle sicher, dass der Upload-Ordner existiert
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 documents_bp = Blueprint('documents_bp', __name__)
 
@@ -32,44 +44,56 @@ def get_documents():
 def set_document():
     user_id = get_jwt_identity()
     data = request.form
+    file = request.files.get('file')  # Datei aus dem Request abrufen
 
-    print("Received data:", data)
+    if data is None or file is None:
+        return jsonify({"error": "Invalid form data or missing file"}), 400
 
-    if data is None:
-        return jsonify({"error": "Invalid JSON data"}), 400
+    if not allowed_file(file.filename):
+        return jsonify({"error": "File type not allowed"}), 400
 
-    def parse_uuid_or_none(value):
-        return value if value not in ('', 'null', None) else None
-
-    new_document = Document(
-        user_id=user_id,
-        document_type=data['document_type'],
-        status=data['status'],
-        number=data['number'],
-        document_date=data['document_date'],
-        supplier_id=data['supplier_id'],
-        delivery_date=data['delivery_date'],
-        link_id=parse_uuid_or_none(data['link_id']),
-        due_date=data['due_date'] or None,
-        cost_center_id=parse_uuid_or_none(data['cost_center_id']),
-        currency_code=data['currency_code']
-    )
+    # Sicheren Dateinamen generieren
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
 
     try:
+        # Datei speichern
+        file.save(file_path)
+
+        def parse_uuid_or_none(value):
+            return value if value not in ('', 'null', None) else None
+
+        # Neues Dokument erstellen
+        new_document = Document(
+            user_id=user_id,
+            document_type=data['document_type'],
+            status=data['status'],
+            number=data['number'],
+            document_date=data['document_date'],
+            supplier_id=data['supplier_id'],
+            delivery_date=data['delivery_date'],
+            link_id=parse_uuid_or_none(data['link_id']),
+            due_date=data['due_date'] or None,
+            cost_center_id=parse_uuid_or_none(data['cost_center_id']),
+            currency_code=data['currency_code']
+        )
+
         db.session.add(new_document)
         db.session.commit()
 
+        # Upload-Daten speichern
         new_upload = Upload(
             document_id=new_document.id,
-            filename=data['filename'],
-            file_path=data['file_path'],
-            mimetype=data['mimetype'],
-            file_size=data['file_size']
+            filename=filename,
+            file_path=file_path,
+            mimetype=file.mimetype,
+            file_size=os.path.getsize(file_path)
         )
 
         db.session.add(new_upload)
         db.session.commit()
 
+        # Positionen hinzufügen
         positions = request.form.get('positions')
         if positions:
             import json
@@ -94,6 +118,9 @@ def set_document():
 
     except Exception as e:
         db.session.rollback()
+        # Lösche die Datei, falls ein Fehler auftritt
+        if os.path.exists(file_path):
+            os.remove(file_path)
         return jsonify({"error": f"An error occurred while adding new Document: {str(e)}"}), 500
 
 
@@ -108,14 +135,16 @@ def get_document_by_id(id):
 
     result = {
         "id": str(document.id),
-        "filename": document.filename,
-        "upload_path": document.upload_path,
-        "upload_date": document.upload_date,
-        "beleg_datum": document.beleg_datum,
-        "betrag": float(document.betrag) if document.betrag else None,
-        "kategorie_id": str(document.kategorie_id) if document.kategorie_id else None,
-        "beschreibung": document.beschreibung,
-        "steuerart": document.steuerart
+        "document_type":document.document_type,
+        "status":document.status,
+        "number":document.number,
+        "document_date":document.document_date,
+        "supplier_id":document.supplier_id,
+        "delivery_date":document.delivery_date,
+        "link_id":document.link_id,
+        "due_date":document.due_date,
+        "cost_center_id":document.cost_center_id,
+        "currency_code":document.currency_code,
     }
     return jsonify(result), 200
 

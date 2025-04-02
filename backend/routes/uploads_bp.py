@@ -40,5 +40,3 @@ def upload_file():
 
     except Exception as e:
         return jsonify({'error': f'Fehler beim Speichern der Datei: {str(e)}'}), 500
-
-# TODO: DELETE UPLOAD
