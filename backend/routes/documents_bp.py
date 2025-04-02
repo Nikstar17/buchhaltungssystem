@@ -32,11 +32,14 @@ def get_documents():
 def set_document():
     user_id = get_jwt_identity()
     data = request.form
-    print(data)
+
+    print("Received data:", data)
 
     if data is None:
-        print("None")
         return jsonify({"error": "Invalid JSON data"}), 400
+
+    def parse_uuid_or_none(value):
+        return value if value not in ('', 'null', None) else None
 
     new_document = Document(
         user_id=user_id,
@@ -46,9 +49,9 @@ def set_document():
         document_date=data['document_date'],
         supplier_id=data['supplier_id'],
         delivery_date=data['delivery_date'],
-        link_id=data['link_id'],
-        due_date=data['due_date'],
-        cost_center_id=data['cost_center_id'],
+        link_id=parse_uuid_or_none(data['link_id']),
+        due_date=data['due_date'] or None,
+        cost_center_id=parse_uuid_or_none(data['cost_center_id']),
         currency_code=data['currency_code']
     )
 
@@ -67,27 +70,31 @@ def set_document():
         db.session.add(new_upload)
         db.session.commit()
 
-        new_line_item = LineItem(
-            document_id=new_document.id,
-            line_number=data['line_number'],
-            description=data['description'],
-            quantity=data['quantity'],
-            unit_price=data['unit_price'],
-            total_price=data['total_price'],
-            category_id=data['category_id'],
-            tax_rate_id=data['tax_rate_id'],
-            account_id=data['account_id']
-        )
+        positions = request.form.get('positions')
+        if positions:
+            import json
+            positions = json.loads(positions)
+            for position in positions:
+                new_line_item = LineItem(
+                    document_id=new_document.id,
+                    line_number=position['line_number'],
+                    description=position['description'],
+                    quantity=position['quantity'],
+                    unit_price=position['unit_price'],
+                    total_price=position['total_price'],
+                    category_id=parse_uuid_or_none(position['category_id']),
+                    tax_rate_id=position['tax_rate_id'],
+                    account_id=parse_uuid_or_none(position['account_id'])
+                )
+                db.session.add(new_line_item)
 
-        db.session.add(new_line_item)
         db.session.commit()
 
-        return jsonify({"message": "Document, upload, and line item added successfully"}), 201
+        return jsonify({"message": "Document, upload, and line items added successfully"}), 201
 
     except Exception as e:
         db.session.rollback()
-        print(e)
-        return jsonify({"error": "An error occurred while adding new Document"}), 500
+        return jsonify({"error": f"An error occurred while adding new Document: {str(e)}"}), 500
 
 
 @documents_bp.route('/documents/<id>', methods=['GET'])

@@ -1,5 +1,5 @@
 <template>
-  <div class="py-5">
+  <div>
     <div v-if="!fileUploaded" class="flex items-center justify-center [height:calc(100svh-5rem)]">
       <input type="file" @change="handleFileChange" accept=".pdf,image/png,image/jpeg" />
     </div>
@@ -63,16 +63,14 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue';
+import { ref } from 'vue';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { XMarkIcon } from '@heroicons/vue/24/solid';
-import API_URL from '@/api';
-import { showSnackbarMessage } from '@/composables/useSnackbar';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-const emit = defineEmits(['file-selected']);
+const emit = defineEmits(['file-selected', 'upload-file']);
 const fileUrl = ref(null);
 const fileType = ref(null);
 const pdfCanvas = ref(null);
@@ -96,37 +94,11 @@ const renderPage = async (pageNumber) => {
   await page.render({ canvasContext: context, viewport }).promise;
 };
 
-const uploadFileToServer = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const csrfToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
-
-    const response = await fetch(`${API_URL}/api/upload`, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      body: formData,
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      showSnackbarMessage('Datei erfolgreich hochgeladen', 'success');
-    } else {
-      showSnackbarMessage('Fehler beim Hochladen der Datei.', 'error');
-    }
-  } catch (error) {
-    showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten', 'error');
-  }
-};
-
 const handleFileChange = async (event) => {
   const file = event.target.files[0];
+
+  console.log('file.', file);
+
   if (!file) return;
 
   fileUploaded.value = true;

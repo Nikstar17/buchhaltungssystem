@@ -1,11 +1,12 @@
 <template>
   <div class="flex space-x-4 max-h-screen p-5">
+    <!-- Upload Section -->
     <div class="w-3/5 overflow-y-auto">
-      <PdfViewer @file-selected="updateFileUploaded" />
+      <PdfViewer @file-deleted="deleteUploadedFile" @file-selected="updateFileUploaded" />
     </div>
 
     <!-- Form Section -->
-    <div class="w-2/5 overflow-y-auto">
+    <div class="w-2/5 overflow-y-auto px-5">
       <form ref="uploadForm" @submit.prevent="uploadDocument" class="space-y-4">
         <div>
           <label class="block font-medium">Belegart *</label>
@@ -154,6 +155,8 @@
           </div>
         </div>
         <br />
+
+        <!-- Postions -->
         <div v-for="(position, index) in positions" :key="index" class="mb-6">
           <div class="flex items-center my-4">
             <div class="flex-grow border-t border-black"></div>
@@ -177,7 +180,7 @@
               <input
                 type="text"
                 :id="'category_name-' + index"
-                v-model="position.categoryName"
+                v-model="position.category_id"
                 placeholder="Kategorie eingeben (z.B. Miete)"
                 class="border border-gray-300 rounded px-3 py-2 w-full"
               />
@@ -186,7 +189,7 @@
               <label :for="'umsatzsteuer-' + index" class="block font-medium">Umsatzsteuer *</label>
               <select
                 :id="'umsatzsteuer-' + index"
-                v-model="position.umsatzsteuer"
+                v-model="position.tax_rate_id"
                 required
                 class="border border-gray-300 rounded px-3 py-2 w-full"
                 @change="handleTaxRateChange($event, index)"
@@ -203,7 +206,7 @@
               <input
                 type="number"
                 :id="'menge-' + index"
-                v-model.number="position.menge"
+                v-model.number="position.quantity"
                 required
                 step="1"
                 min="0"
@@ -216,7 +219,7 @@
               <input
                 type="number"
                 :id="'einzelpreis-' + index"
-                v-model.number="position.einzelpreis"
+                v-model.number="position.unit_price"
                 required
                 step="0.01"
                 placeholder="Einzelpreis"
@@ -228,7 +231,7 @@
               <input
                 type="number"
                 name="total_price"
-                :value="(position.menge || 0) * (position.einzelpreis || 0)"
+                :value="(position.quantity || 0) * (position.unit_price || 0)"
                 class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100"
                 disabled
               />
@@ -244,6 +247,7 @@
           </div>
         </div>
 
+        <!-- Buttons new Position and Upload -->
         <div class="flex justify-between">
           <button
             type="button"
@@ -446,7 +450,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import API_URL from '@/api';
 import PdfViewer from './PdfViewer.vue';
 import {
@@ -455,14 +459,26 @@ import {
   snackbarType,
   showSnackbarMessage,
 } from '@/composables/useSnackbar';
+import { onBeforeRouteLeave } from 'vue-router';
 
 // Formular-Referenzen
 const uploadForm = ref(null); // Referenz auf das Upload-Formular
-// const selectedFile = ref(null); // Speichert die ausgewählte Datei
 
 // Reaktive Zustände für die Belegarten und Dokumentdaten
 const categoryType = ref(); // Belegart (Radio-Button Markierung)
-const positions = ref([{ betrag: '', description: '', categoryName: '', umsatzsteuer: '' }]); // Positionen (Buchungsdaten)
+const suppliers = ref([]); // Optionen für das Lieferanten-Dropdown
+const positions = ref([
+  {
+    line_number: '',
+    description: '',
+    quantity: '',
+    unit_price: '',
+    total_price: '',
+    category_id: '',
+    tax_rate_id: '',
+    account_id: '',
+  },
+]);
 
 // Reaktive Zustände für Umsatzsteuer
 const taxRates = ref([]); // Optionen für das Umsatzsteuer-Dropdown
@@ -481,7 +497,7 @@ const documentDetails = ref({
   document_date: '',
   supplier_id: '',
   delivery_date: '',
-  link_id: '',
+  link_id: '', // TODO: Implement Links
   due_date: '',
   cost_center_id: '',
   currency_code: 'EUR', // TODO: Add dynamic currency selection in the future
@@ -499,7 +515,6 @@ const documentDetails = ref({
   file_size: '',
 });
 
-const suppliers = ref([]); // Optionen für das Lieferanten-Dropdown
 const newSupplier = ref({
   name: '',
   address: '',
@@ -513,7 +528,7 @@ const newSupplier = ref({
 
 const addPosition = () => {
   positions.value.push({
-    betrag: '',
+    quantity: '',
     description: '',
     categoryName: '',
     umsatzsteuer: '',
@@ -688,8 +703,13 @@ const uploadDocument = async () => {
   formData.append('mimetype', documentDetails.value.mimetype);
   formData.append('file_size', documentDetails.value.file_size);
 
-  // Füge die Positionen als JSON-Array hinzu
-  formData.append('positions', JSON.stringify(positions.value));
+  // Füge die Positionen hinzu, berechne total_price und setze line_number
+  const positionsWithLineNumbers = positions.value.map((position, index) => ({
+    ...position,
+    line_number: index + 1, // line_number beginnt bei 1
+    total_price: (position.quantity || 0) * (position.unit_price || 0), // Berechnung von total_price
+  }));
+  formData.append('positions', JSON.stringify(positionsWithLineNumbers));
 
   try {
     const csrfToken = document.cookie
@@ -708,31 +728,70 @@ const uploadDocument = async () => {
 
     if (response.ok) {
       showSnackbarMessage('Beleg erfolgreich hochgeladen!', 'success');
-
-      file.value = null;
-      description.value = '';
-      categoryName.value = '';
-      categoryType.value = '';
-      belegDatum.value = '';
-      betrag.value = '';
-      steuerart.value = '';
-      lieferdatum.value = '';
-      lieferant.value = '';
-      verknuepfung.value = '';
-      faelligkeit.value = '';
-      kostenstelle.value = '';
-      tags.value = '';
-      positions.value = [{ betrag: '', description: '', categoryName: '', Umsatzsteuer: '' }];
-      document.getElementById('file').value = '';
-
-      //emit('document-uploaded');
+      resetForm();
     } else {
-      showSnackbarMessage('Fehler beim hochladen', 'error');
+      await deleteUploadedFile(); // Lösche die Datei, wenn der Beleg-Upload fehlschlägt
+      showSnackbarMessage('Fehler beim Hochladen des Belegs', 'error');
     }
   } catch (error) {
-    console.error('Upload-Fehler:', error);
+    console.error('Beleg-Upload-Fehler:', error);
+    await deleteUploadedFile(); // Lösche die Datei bei einem Fehler
     showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten.', 'error');
   }
+};
+
+const deleteUploadedFile = async () => {
+  try {
+    const csrfToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrf_access_token='))
+      ?.split('=')[1];
+
+    const response = await fetch(`${API_URL}/api/uploads/${documentDetails.value.filename}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Fehler beim Löschen der Datei');
+    }
+  } catch (error) {
+    console.error('Fehler beim Löschen der Datei:', error);
+  }
+};
+
+const resetForm = () => {
+  // Setze das Formular zurück
+  documentDetails.value = {
+    document_type: '',
+    status: 'OPEN',
+    number: '',
+    document_date: '',
+    supplier_id: '',
+    delivery_date: '',
+    link_id: '',
+    due_date: '',
+    cost_center_id: '',
+    currency_code: 'EUR',
+    filename: '',
+    file_path: '',
+    mimetype: '',
+    file_size: '',
+  };
+  positions.value = [
+    {
+      description: '',
+      quantity: '',
+      unit_price: '',
+      total_price: '',
+      category_id: '',
+      tax_rate_id: '',
+      account_id: '',
+    },
+  ];
 };
 
 onMounted(() => {

@@ -7,7 +7,7 @@ from models import db, Upload
 
 uploads_bp = Blueprint('uploads_bp', __name__)
 
-@uploads_bp.route('/upload', methods=['POST'])
+@uploads_bp.route('/uploads', methods=['POST'])
 @jwt_required()
 def upload_file():
     user_id = get_jwt_identity()
@@ -35,8 +35,10 @@ def upload_file():
 
         return jsonify({
             'message': 'Datei erfolgreich hochgeladen',
-            'file_path': f'uploads/{filename}'  # rein informativ
+            'file_path': f'uploads/{filename}'
         }), 201
 
     except Exception as e:
         return jsonify({'error': f'Fehler beim Speichern der Datei: {str(e)}'}), 500
+
+# TODO: DELETE UPLOAD
