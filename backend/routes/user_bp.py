@@ -37,7 +37,7 @@ def register_user():
 
     new_user = User(
         email=data['email'],
-        password=data['password'],  # Passwort wird bereits gehasht gespeichert
+        password=data['password'],  # Use the password setter to hash the password
         first_name=encrypt(data['first_name']),
         last_name=encrypt(data['last_name']),
         street=encrypt(data['street']),
@@ -64,14 +64,17 @@ def login_user():
 
     user = User.query.filter_by(email=data['email']).first()
 
-    if user and user.check_password(data['password']):
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
+    try:
+        if user and user.check_password(data['password']):
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
 
-        response = jsonify({"message": "Login erfolgreich", "access_token": access_token})
-        set_access_cookies(response, access_token)
-        set_refresh_cookies(response, refresh_token)
-        return response
+            response = jsonify({"message": "Login erfolgreich", "access_token": access_token})
+            set_access_cookies(response, access_token)
+            set_refresh_cookies(response, refresh_token)
+            return response
+    except ValueError as e:
+        return jsonify({"error": "Invalid password hash"}), 500
 
     return jsonify({"message": "Invalid credentials"}), 400
 

@@ -18,10 +18,10 @@
       <div class="relative">
         <XMarkIcon
           @click="deleteFile"
-          class="absolute top-16 right-0 bg-red-500 hover:bg-gray-500 text-white rounded-full p-2 mt-2 mr-2 h-8"
+          class="absolute top-24 right-5 bg-red-500 hover:bg-gray-500 text-white rounded-full p-2 mt-2 mr-2 h-8"
         />
       </div>
-      <div class="flex justify-evenly mx-auto py-3">
+      <div class="flex justify-evenly mx-auto sticky top-0 z-10 bg-gray-50 py-5">
         <button
           @click="prevPage"
           :disabled="currentPage <= 1"
@@ -38,25 +38,9 @@
           Weiter
         </button>
       </div>
-      <div class="canvas-container mx-auto">
+
+      <div class="canvas-container mx-auto pb-5 px-5">
         <canvas ref="pdfCanvas" class="w-full"></canvas>
-      </div>
-      <div class="flex justify-evenly mx-auto py-3">
-        <button
-          @click="prevPage"
-          :disabled="currentPage <= 1"
-          class="px-4 py-2 bg-gray-300 rounded"
-        >
-          Zurück
-        </button>
-        <span>Seite {{ currentPage }} von {{ totalPages }}</span>
-        <button
-          @click="nextPage"
-          :disabled="currentPage >= totalPages"
-          class="px-4 py-2 bg-gray-300 rounded"
-        >
-          Weiter
-        </button>
       </div>
     </div>
   </div>
@@ -70,7 +54,7 @@ import { XMarkIcon } from '@heroicons/vue/24/solid';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-const emit = defineEmits(['file-selected', 'upload-file']);
+const emit = defineEmits(['file-selected', 'file-deleted']);
 const fileUrl = ref(null);
 const fileType = ref(null);
 const pdfCanvas = ref(null);
@@ -143,7 +127,13 @@ const deleteFile = () => {
   pdfDocument = null;
   currentPage.value = 1;
   totalPages.value = 0;
+  emit('file-deleted', null);
 };
+
+// Expose deleteFile für die Elternkomponente
+defineExpose({
+  deleteFile,
+});
 </script>
 
 <style scoped>

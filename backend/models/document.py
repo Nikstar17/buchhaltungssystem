@@ -1,30 +1,28 @@
-from sqlalchemy import Column, Date, String, Enum, ForeignKey, CHAR
-from sqlalchemy.dialects.postgresql import UUID
+# models/document.py
+
 import uuid
+from sqlalchemy import Column, String, Date, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID, CHAR
 from . import db
+from .enum import document_type_enum, document_status_enum
+
 
 class Document(db.Model):
-    __tablename__ = "document"
+    __tablename__ = "documents"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
 
-    document_type = Column(
-        Enum("INCOME", "EXPENSE", name="document_type"),
-        nullable=False
-    )  # Eingangs- oder Ausgangsbeleg
+    document_type = Column(document_type_enum, nullable=False)  # z. B. INCOME, EXPENSE
+    status = Column(document_status_enum, nullable=False)        # z. B. OPEN, PAID
 
-    status = Column(
-        Enum("OPEN", "PAID", "CANCELLED", "OVERDUE", name="document_status"),
-        nullable=False
-    )  # Status des Belegs
+    number = Column(String, nullable=False)                      # Belegnummer
+    document_date = Column(Date, nullable=False)                 # Ausstellungsdatum
 
-    number = Column(String, nullable=False)  # Belegnummer (intern oder extern)
-    document_date = Column(Date, nullable=False)  # Ausstellungsdatum
-
-    supplier_id = Column(UUID(as_uuid=True), ForeignKey("supplier.id"), nullable=True)
+    supplier_id = Column(UUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=True)
     delivery_date = Column(Date, nullable=True)
-    link_id = Column(UUID(as_uuid=True), ForeignKey("link.id"), nullable=True)
+    link_id = Column(UUID(as_uuid=True), ForeignKey("links.id"), nullable=True)
     due_date = Column(Date, nullable=True)
-    cost_center_id = Column(UUID(as_uuid=True), ForeignKey("cost_center.id"), nullable=True)
-    currency_code = Column(CHAR(3), ForeignKey("currency.code"), nullable=False)
+    cost_center_id = Column(UUID(as_uuid=True), ForeignKey("cost_centers.id"), nullable=True)
+
+    currency_code = Column(CHAR(3), ForeignKey("currencies.code"), nullable=False)  # ISO-Code

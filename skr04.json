@@ -1,0 +1,1370 @@
+{
+  "title": "\n    Kontenrahmen SKR03\n  ",
+  "short_description": "\n    Standardkontenrahmen SKR03\n  ",
+  "long_description": "\n    Beta Version des Kontenrahmes SKR03 zum Erweitern und Umstrukturieren. Der Kontenrahmen sollte den eigenen Bedürfnissen angepasst werden was Struktur und Kontenbezeichnungen angeht. WICHTIG!: Die Privatkonten fließen nicht in die Berechnung des Berichtes Bilanz, sind jedoch im Bericht Bilanz aufgeführt. Die im Bericht Bilanz aufgeführte Passiva \"Gewinnrücklagen\" gibt den Saldo der GuV aus. Die Anlage dieses Kontenrahmens wurde von der Firma LiHAS - Linuxhaus Stuttgart - unterstützt.\n  ",
+  "accounts": [
+    {
+      "name": "Root Account",
+      "id": "1972cce2e2364f95b2b0bc014502661d",
+      "type": "ROOT",
+      "commodity_scu": "0"
+    },
+    {
+      "name": "Aktiva",
+      "id": "fc3b1f110a6686f3d40bb0c41c0f8de0",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "description": "Aktiva",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d"
+    },
+    {
+      "name": "Anlage- u. Kapitalkonten 0",
+      "id": "27356188a1963c1dbf943022441d095f",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "fc3b1f110a6686f3d40bb0c41c0f8de0",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        },
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "0027 EDV-Software",
+      "id": "8275e7a0b489940a2ba993f9019a898f",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0027",
+      "parent_id": "27356188a1963c1dbf943022441d095f",
+      "slots": [
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "0410 Geschäftsausstattung",
+      "id": "a588283077bd935dede66d13b2ee478f",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0410",
+      "parent_id": "27356188a1963c1dbf943022441d095f",
+      "slots": [
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "0420 Büroeinrichtung",
+      "id": "573063d23b81fe3f9917d80fe6cc41e7",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0420",
+      "parent_id": "27356188a1963c1dbf943022441d095f",
+      "slots": [
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "0565 Darlehen",
+      "id": "bd74fcb2d15fc7540ecc5ba8f27cbf48",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0565",
+      "parent_id": "27356188a1963c1dbf943022441d095f"
+    },
+    {
+      "name": "0210 Maschinen",
+      "id": "904b262e6f84659046267cad87ac5e90",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0210",
+      "parent_id": "27356188a1963c1dbf943022441d095f"
+    },
+    {
+      "name": "0400 Betriebsausstattung",
+      "id": "910d6c057660045a9958fb5a57ffc899",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0400",
+      "parent_id": "27356188a1963c1dbf943022441d095f"
+    },
+    {
+      "name": "0430 Ladeneinrichtung",
+      "id": "2876b41c069107076e7a18ec39bf4f9c",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "0430",
+      "parent_id": "27356188a1963c1dbf943022441d095f"
+    },
+    {
+      "name": "Finanzkonten 1",
+      "id": "1b13a7614b5e84b0778963995e20d897",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "fc3b1f110a6686f3d40bb0c41c0f8de0",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "1100 Postbank",
+      "id": "9fe8d61dac9cf62b3f12e6c71a4385b2",
+      "type": "BANK",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1100",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1200 Bankkonto",
+      "id": "875ec51cd332f3b75c15a2a9ca309ebd",
+      "type": "BANK",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1200",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1590 Durchlaufende Posten",
+      "id": "f048cb49a135a298d5df958a4c63ba22",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1590",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1371 Gewinnermittlung §4/3 nicht Ergebniswirksam",
+      "id": "58c8b84a785d7feac255d381943076df",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1371",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1571 Abziehbare VSt. 7%",
+      "id": "7edc3c319713c53035b3e439ccec5e2b",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1571",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1576 Abziehbare VSt. 19%",
+      "id": "507b25d5d47d57ba115929b70a32fa5e",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1576",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1577 Abziehbare VStr. nach §13b UStG 19%",
+      "id": "ac0fb64d0cfc2b88444527ce8c8682fe",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1577",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "1400 Ford. a. Lieferungen und Leistungen",
+      "id": "2fe36b4ddde053387e42aa893a94b91b",
+      "type": "RECEIVABLE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1400",
+      "parent_id": "1b13a7614b5e84b0778963995e20d897"
+    },
+    {
+      "name": "Wareneingangs- u. Bestandskonten 3",
+      "id": "a26df9927a82bcb58a1facb4cde6f221",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "fc3b1f110a6686f3d40bb0c41c0f8de0",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "3120 Leistungen §13b UStG 19% Vorsteuer, 19% Umsatzsteuer",
+      "id": "39c180a4e3647d347ebc3e16e984372b",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "3120",
+      "parent_id": "a26df9927a82bcb58a1facb4cde6f221"
+    },
+    {
+      "name": "3400 Wareneingang VSt. 19%",
+      "id": "01e4b246665a54d40466ba88f5d1d34e",
+      "type": "ASSET",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "3400",
+      "parent_id": "a26df9927a82bcb58a1facb4cde6f221",
+      "slots": [
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "Passiva",
+      "id": "845b29bc14787bded30488e8d51eec0b",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "description": "Passiva",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "Umsatzsteuer",
+      "id": "dea7f32e6a447d2d1cd7048932c98265",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "845b29bc14787bded30488e8d51eec0b",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "1771 Umsatzsteuer 7%",
+      "id": "d699c440f7817339d2fe60dd875520b6",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1771",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1776 Umsatzsteuer 19%",
+      "id": "55a2876edef147ed7631486de4af558c",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1776",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1780 Umsatzsteuer-Vorauszahlung",
+      "id": "4b5e1c2b17024a7721d0955c9f140dd6",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1780",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1781 Umsatzsteuer-Vorauszahlung 1/11",
+      "id": "08793cd11dfca23d7b435a7338db02da",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1781",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1787 Umsatzsteuer § 13b UStG 19%",
+      "id": "8e1583dfe60365b756f5365741250001",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1787",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1790 Umsatzsteuer Vorjahr",
+      "id": "635fe36261db8b9beda522420f564028",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1790",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "1791 Umsatzsteuer frühere Jahre",
+      "id": "b2d79b416fee27d4d6a38643f6ad0d45",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1791",
+      "parent_id": "dea7f32e6a447d2d1cd7048932c98265"
+    },
+    {
+      "name": "Verbindlichkeiten",
+      "id": "a31fca8b7c5eb2cb0111f1f97696ac93",
+      "type": "LIABILITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "845b29bc14787bded30488e8d51eec0b",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "1600 Verblk. aus Lieferungen u. Leistungen",
+      "id": "1bf9f2675a36b278adcf6da68a7e4cbe",
+      "type": "PAYABLE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1600",
+      "parent_id": "a31fca8b7c5eb2cb0111f1f97696ac93"
+    },
+    {
+      "name": "Erlöse u. Erträge 2/8",
+      "id": "3f31fc649f19b5201f22f7648c3f7107",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "Erlöskonten 8",
+      "id": "fd04e181ab83b37b80a4609b0806e954",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "3f31fc649f19b5201f22f7648c3f7107",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "8400 Erlöse USt. 19%",
+      "id": "d75d796e879b0ad9b2732d698ae9e838",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "8400",
+      "parent_id": "fd04e181ab83b37b80a4609b0806e954",
+      "slots": [
+        {
+          "key": "tax-related",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "8300 Erlöse USt. 7%",
+      "id": "0c82316c2aecaa02ce1b4ecb223f6f5d",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "8300",
+      "parent_id": "fd04e181ab83b37b80a4609b0806e954"
+    },
+    {
+      "name": "Ertragskonten 2",
+      "id": "4f552b822559c82eaa816d0049f70064",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "3f31fc649f19b5201f22f7648c3f7107",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "2650 sonstige Zinsen und ähnliche Erträge",
+      "id": "cc08ab7c747853f5f7ea6b384fdd8b4d",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "2650",
+      "parent_id": "4f552b822559c82eaa816d0049f70064"
+    },
+    {
+      "name": "2500 Außerordentliche Erträge",
+      "id": "5634359999c43ba58697553d1d905c4c",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "2500",
+      "parent_id": "4f552b822559c82eaa816d0049f70064"
+    },
+    {
+      "name": "2700 Sonstige Erträge",
+      "id": "067716095fef7e694a2e0c40f1eaaefd",
+      "type": "INCOME",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "2700",
+      "parent_id": "4f552b822559c82eaa816d0049f70064"
+    },
+    {
+      "name": "Aufwendungen 2/4",
+      "id": "be324e400d3b67510f89afd18de776e3",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "Abschreibungen",
+      "id": "ad3f063a8200c1faa0331e2d9eb3ae04",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4855 Sofortabschreibung GWG",
+      "id": "cf214c888424ce036704bd526650a4c1",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4855",
+      "parent_id": "ad3f063a8200c1faa0331e2d9eb3ae04"
+    },
+    {
+      "name": "Kfz-Kosten",
+      "id": "8488954a5834d5484ed57439a0d43305",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4510 Kfz-Steuer",
+      "id": "4355e4bceaa024b71efb3223ac6576c0",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4510",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "4520 Kfz-Versicherungen",
+      "id": "4395e7b49fc7d34db620e6249836d747",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4520",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "4530 laufende Kfz-Betriebskosten",
+      "id": "9bcbd663916f135d81b8eff6dc8b8819",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4530",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "4540 Kfz-Reparaturen",
+      "id": "5359164e661dd33c4bdb98b5149b07d1",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4540",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "4570 Fremdfahrzeuge",
+      "id": "3b92417001893aa765edaa7109b2d48a",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4570",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "4580 sonstige Kfz-Kosten",
+      "id": "e4c3ff3a921558869191a648aeb9b0e3",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4580",
+      "parent_id": "8488954a5834d5484ed57439a0d43305"
+    },
+    {
+      "name": "Personalkosten",
+      "id": "43953979cf408743814cb6887d5ec022",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4120 Gehälter",
+      "id": "8f21199517fcfd70ad2ad6aaa3e714b6",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4120",
+      "parent_id": "43953979cf408743814cb6887d5ec022"
+    },
+    {
+      "name": "4130 gesetzliche soziale Aufwendungen",
+      "id": "46ba645d075b6a1f3a38824d812f8818",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4130",
+      "parent_id": "43953979cf408743814cb6887d5ec022"
+    },
+    {
+      "name": "4165 Aufwendungen für Altersvorsorge",
+      "id": "e89eafba1acc736a7ba74882a7f8c836",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4165",
+      "parent_id": "43953979cf408743814cb6887d5ec022"
+    },
+    {
+      "name": "4170 Vermögenswirksame Leistungen",
+      "id": "88bc69e1ff8977cd70c52567dde8107d",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4170",
+      "parent_id": "43953979cf408743814cb6887d5ec022"
+    },
+    {
+      "name": "4190 Aushilfslöhne",
+      "id": "d74350b9ad5583b533fd906ec837d9fe",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4190",
+      "parent_id": "43953979cf408743814cb6887d5ec022"
+    },
+    {
+      "name": "Raumkosten",
+      "id": "9adef6f318a931fbb8519a823e2c20e8",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4210 Miete und Nebenkosten",
+      "id": "b6e84a2fcf1754f1f6f1f71913f03a1d",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4210",
+      "parent_id": "9adef6f318a931fbb8519a823e2c20e8"
+    },
+    {
+      "name": "4240 Gas, Wasser, Strom (Verwaltung, Vertrieb)",
+      "id": "d41823e7c279286dd74c6ec757dcb305",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4240",
+      "parent_id": "9adef6f318a931fbb8519a823e2c20e8"
+    },
+    {
+      "name": "4250 Reinigung",
+      "id": "db313359a146b610ce80a36dde18bf01",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4250",
+      "parent_id": "9adef6f318a931fbb8519a823e2c20e8"
+    },
+    {
+      "name": "Reparatur/Instandhaltung",
+      "id": "accaec28a4afcf3c82570da4c9343c2d",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4805 Reparatur u. Instandh. von Anlagen/Maschinen u. Betriebs- u. Geschäftsausst.",
+      "id": "b5d6461bb3028d13faa8bee2981925a1",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4805",
+      "parent_id": "accaec28a4afcf3c82570da4c9343c2d"
+    },
+    {
+      "name": "Versicherungsbeiträge",
+      "id": "709bf14d69164a6c2a48e6c0e13ece37",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4360 Versicherungen",
+      "id": "7484251f3d5fc7ec71419b2fba733a78",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4360",
+      "parent_id": "709bf14d69164a6c2a48e6c0e13ece37"
+    },
+    {
+      "name": "4380 Beiträge",
+      "id": "f2b1ad75fd3b7fc4473972a9c2675cbf",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4380",
+      "parent_id": "709bf14d69164a6c2a48e6c0e13ece37"
+    },
+    {
+      "name": "4390 sonstige Ausgaben",
+      "id": "a2d552e480b95123e90be434b3ac9653",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4390",
+      "parent_id": "709bf14d69164a6c2a48e6c0e13ece37"
+    },
+    {
+      "name": "4396 steuerlich abzugsfähige Verspätungszuschläge und Zwangsgelder",
+      "id": "0c73c5dc5e72bb4962b83ddc85991101",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4396",
+      "parent_id": "709bf14d69164a6c2a48e6c0e13ece37"
+    },
+    {
+      "name": "Werbe-/Reisekosten",
+      "id": "a657ade965a1429d44d830d3832bf9aa",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4610 Werbekosten",
+      "id": "2d90f835fcb74d7a77b4a2a2b40c777a",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4610",
+      "parent_id": "a657ade965a1429d44d830d3832bf9aa"
+    },
+    {
+      "name": "4653 Aufmerksamkeiten",
+      "id": "790770c5f93cff7d585bca1627446716",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4653",
+      "parent_id": "a657ade965a1429d44d830d3832bf9aa"
+    },
+    {
+      "name": "4665 nicht abzugsfähige Betriebsausg. aus Werbe-, Repräs.- u. Reisekosten",
+      "id": "235a6225c2c7d2ffa865345e78cae283",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4665",
+      "parent_id": "a657ade965a1429d44d830d3832bf9aa"
+    },
+    {
+      "name": "4670 Reisekosten Unternehmer",
+      "id": "dda3ae53573975cd05fab1d3cdf40806",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4670",
+      "parent_id": "a657ade965a1429d44d830d3832bf9aa"
+    },
+    {
+      "name": "verschiedene Kosten",
+      "id": "d0c00095e4b00f9f25253307be05e885",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "4910 Porto",
+      "id": "b84666b6b2d17f4be4a2cc15e595b30d",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4910",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4920 Telekom",
+      "id": "892bb0974aa6c422f63b5df5354e8f7f",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4920",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4921 Mobilfunk D2",
+      "id": "20a13b07d90c5b385e78190525439aa2",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4921",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4922 Internet",
+      "id": "4d57d9103ab150ad4f01bc7a918fd0cc",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4922",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4930 Bürobedarf",
+      "id": "ac4d7c452835096c373f1a94dc3104f4",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4930",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4940 Zeitschriften, Bücher",
+      "id": "1bac306450e7bc0619e42c11ab791204",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4940",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4945 Fortbildungskosten",
+      "id": "6be35acc206b144ee23c07086bc7a856",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4945",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4955 Buchführungskosten",
+      "id": "25afa584627e0c0e8681bd8a82a77d14",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4955",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4957 Abschluß- u. Prüfungskosten",
+      "id": "bf093094a55c036a193357ebcafcab67",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4957",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4970 Nebenkosten des Geldverkehrs",
+      "id": "4f476c9b65684d56630db45690b9d4fc",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4970",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "4985 Werkzeuge und Kleingeräte",
+      "id": "a5b36148c3fc06080973a5d25f28225b",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "4985",
+      "parent_id": "d0c00095e4b00f9f25253307be05e885"
+    },
+    {
+      "name": "Zinsaufwendungen",
+      "id": "8d2641f8bbc41aa863274bb496002f3e",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "be324e400d3b67510f89afd18de776e3",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "2110 Zinsaufwendungen für kurzfristige Verbindlichkeiten",
+      "id": "2d20e36f8abb4e366c8e3e2783bdafab",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "2110",
+      "parent_id": "8d2641f8bbc41aa863274bb496002f3e"
+    },
+    {
+      "name": "2121 Zinsaufwendungen für KFZ Finanzierung",
+      "id": "17651501792b93b06832634462ddddae",
+      "type": "EXPENSE",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "2121",
+      "parent_id": "8d2641f8bbc41aa863274bb496002f3e"
+    },
+    {
+      "name": "Anfangsbestand 9",
+      "id": "2d4eb2e0ef3bab0ac50b87c84babcf5d",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "description": "Saldenvortragskonten",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "Saldenvortragskonten",
+      "id": "26c3f10c1c7621661c1b813d6141280d",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "2d4eb2e0ef3bab0ac50b87c84babcf5d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "9000 Saldenvortrag Sachkonten",
+      "id": "fa346eee1add66248bff420aafeebebb",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "9000",
+      "parent_id": "26c3f10c1c7621661c1b813d6141280d",
+      "slots": [
+        {
+          "key": "equity-type",
+          "value": "opening-balance"
+        }
+      ]
+    },
+    {
+      "name": "9008 Saldenvorträge Debitoren",
+      "id": "1f36ecbf065faa2b25a0749ceee72efa",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "9008",
+      "parent_id": "26c3f10c1c7621661c1b813d6141280d"
+    },
+    {
+      "name": "9009 Saldenvorträge Kreditoren",
+      "id": "a6c754f12d0b9129790d9f52c5361778",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "9009",
+      "parent_id": "26c3f10c1c7621661c1b813d6141280d"
+    },
+    {
+      "name": "Privatkonten 1",
+      "id": "1888a7d2fbbdede8446090a31651565f",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "1972cce2e2364f95b2b0bc014502661d",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "Privatentnahmen/-einlagen",
+      "id": "b9ae1b059749ea81c757a9adad39db1b",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "parent_id": "1888a7d2fbbdede8446090a31651565f",
+      "slots": [
+        {
+          "key": "placeholder",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "1800 Privatentnahme allgemein",
+      "id": "0e6b8f9c973149c8d1c00e40919e9e21",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1800",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    },
+    {
+      "name": "1810 Privatsteuern",
+      "id": "fff2b92b43dc9d9690a7e5c365d2baf6",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1810",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    },
+    {
+      "name": "1820 Sonderausgaben beschränkt abzugsfähig",
+      "id": "5c008564ba99d0dfe6f20166adde5e6c",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1820",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    },
+    {
+      "name": "1830 Sonderausgaben unbeschränkt abzugsfähig",
+      "id": "d89a53718b4753ac5407b38ab43f1339",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1830",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    },
+    {
+      "name": "1850 Außergewöhnliche Belastungen",
+      "id": "ab2c3c1b68e9c21ca3bce32c729c5cdc",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1850",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    },
+    {
+      "name": "1890 Privateinlagen",
+      "id": "4057a69542c170211849f7705354aadb",
+      "type": "EQUITY",
+      "commodity": {
+        "space": "ISO4217",
+        "id": "EUR"
+      },
+      "commodity_scu": "100",
+      "code": "1890",
+      "parent_id": "b9ae1b059749ea81c757a9adad39db1b"
+    }
+  ]
+}

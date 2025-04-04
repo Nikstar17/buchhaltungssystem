@@ -89,16 +89,18 @@ def set_document():
             mimetype=file.mimetype,
             file_size=os.path.getsize(file_path)
         )
-
         db.session.add(new_upload)
         db.session.commit()
 
-        # Positionen hinzufügen
+        # Parse and validate positions
         positions = request.form.get('positions')
         if positions:
             import json
             positions = json.loads(positions)
             for position in positions:
+                if not all(key in position for key in ['line_number', 'description', 'quantity', 'unit_price', 'total_price']):
+                    return jsonify({"error": "Invalid position data"}), 400
+
                 new_line_item = LineItem(
                     document_id=new_document.id,
                     line_number=position['line_number'],
@@ -106,9 +108,9 @@ def set_document():
                     quantity=position['quantity'],
                     unit_price=position['unit_price'],
                     total_price=position['total_price'],
-                    category_id=parse_uuid_or_none(position['category_id']),
-                    tax_rate_id=position['tax_rate_id'],
-                    account_id=parse_uuid_or_none(position['account_id'])
+                    category_id=parse_uuid_or_none(position.get('category_id')),
+                    tax_rate_id=position.get('tax_rate_id'),
+                    account_id=parse_uuid_or_none(position.get('account_id'))
                 )
                 db.session.add(new_line_item)
 
@@ -118,13 +120,15 @@ def set_document():
 
     except Exception as e:
         db.session.rollback()
+
         # Lösche die Datei, falls ein Fehler auftritt
         if os.path.exists(file_path):
             os.remove(file_path)
+
         return jsonify({"error": f"An error occurred while adding new Document: {str(e)}"}), 500
 
 
-@documents_bp.route('/documents/<id>', methods=['GET'])
+@documents_bp.route('/documents/<uuid:id>', methods=['GET'])
 @jwt_required()
 def get_document_by_id(id):
     user_id = get_jwt_identity()
@@ -134,7 +138,7 @@ def get_document_by_id(id):
         return jsonify({"error": "Document not found"}), 404
 
     result = {
-        "id": str(document.id),
+        "id": document.id,
         "document_type":document.document_type,
         "status":document.status,
         "number":document.number,
@@ -148,7 +152,7 @@ def get_document_by_id(id):
     }
     return jsonify(result), 200
 
-@documents_bp.route('/documents/<id>', methods=['PUT'])
+@documents_bp.route('/documents/<uuid:id>', methods=['PUT'])
 @jwt_required()
 def update_document(id):
     user_id = get_jwt_identity()
@@ -193,20 +197,36 @@ def update_document(id):
         return jsonify({"message": "Document updated successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error deleting document and associated data: {str(e)}"}), 500
 
-@documents_bp.route('/documents/<id>', methods=['DELETE'])
+@documents_bp.route('/documents/<uuid:id>', methods=['DELETE'])
 @jwt_required()
 def delete_document(id):
     user_id = get_jwt_identity()
     document = Document.query.filter_by(id=id, user_id=user_id).first()
+    lineItem = LineItem.query.filter_by(document_id=id).all()
+    upload = Upload.query.filter_by(document_id=id).first()
 
     if not document:
         return jsonify({"error": "Document not found"}), 404
 
     try:
+        for item in lineItem:
+            db.session.delete(item)
+        db.session.commit()
+
+        if upload and upload.filename:
+            # Lösche die Datei vom Server
+            file_path = os.path.join(UPLOAD_FOLDER, upload.filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        db.session.delete(upload)
+        db.session.commit()
+
         db.session.delete(document)
         db.session.commit()
+
         return jsonify({"message": "Document deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()

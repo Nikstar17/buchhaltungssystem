@@ -1,18 +1,25 @@
+# models/supplier.py
+
+import uuid
 from sqlalchemy import Column, String, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-import uuid
 from . import db
 
+
 class Supplier(db.Model):
-    __tablename__ = "supplier"
+    __tablename__ = "suppliers"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    name = Column(String, nullable=False)         # Firmenname
-    address = Column(Text, nullable=False)        # Anschrift
-    tax_number = Column(String, nullable=True)    # Steuernummer (national)
-    vat_id = Column(String, nullable=True)        # USt-IdNr. (EU-Ausland)
-    iban = Column(String, nullable=True)          # Bankverbindung
-    bic = Column(String, nullable=True)
-    email = Column(String, nullable=True)         # Kontaktadresse
-    phone = Column(String, nullable=True)         # Telefonnummer
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+
+    name = Column(String, nullable=False)       # Firmenname
+    address = Column(Text, nullable=False)      # Anschrift
+
+    tax_number = Column(String, nullable=True)  # Steuernummer
+    vat_id = Column(String, nullable=True)      # USt-ID
+
+    iban = Column(String, nullable=True)        # IBAN
+    bic = Column(String, nullable=True)         # BIC
+
+    email = Column(String, nullable=True)       # E-Mail-Adresse
+    phone = Column(String, nullable=True)       # Telefonnummer

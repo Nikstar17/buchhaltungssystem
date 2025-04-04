@@ -268,40 +268,6 @@ const updateDocument = async () => {
   }
 };
 
-const deleteDocument = async () => {
-  showDeleteModal.value = false;
-  try {
-    const csrfToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
-
-    if (!csrfToken) {
-      displaySnackbar('CSRF-Token fehlt. Bitte melden Sie sich erneut an.', 'error');
-      window.location.href = '/login';
-      return;
-    }
-
-    const response = await fetch(`${API_URL}/api/documents/${props.document.id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      displaySnackbar('Dokument erfolgreich gelöscht.');
-      emit('document-deleted');
-    } else {
-      displaySnackbar('Fehler beim Löschen des Dokuments.', 'error');
-    }
-  } catch (error) {
-    console.error('Fehler beim Löschen:', error);
-    displaySnackbar('Ein unerwarteter Fehler ist aufgetreten.', 'error');
-  }
-};
-
 const confirmDelete = async () => {
   showDeleteModal.value = false;
   try {

@@ -53,7 +53,7 @@ const router = createRouter({
           component: DocumentDetails,
         },
         {
-          path: 'documents/upload', // Define the route for DocumentUpload
+          path: 'documents/upload',
           name: 'document-upload',
           component: DocumentUpload,
         },
