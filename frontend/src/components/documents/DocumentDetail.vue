@@ -103,7 +103,7 @@
           <!-- Delete Confirmation Modal -->
           <div
             v-if="showDeleteModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           >
             <div class="bg-white rounded-lg shadow-lg p-6 w-96">
               <h2 class="text-lg font-semibold text-gray-800 mb-4">Beleg löschen</h2>

@@ -1,28 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useUserStore } from '@/stores/user';
 import { jwtDecode } from 'jwt-decode';
-import RegisterComp from '@/views/RegisterView.vue';
-import LoginPage from '@/views/LoginView.vue';
-import DashboardView from '@/views/DashboardView.vue';
-import DashboardComp from '@/components/HomeComp.vue';
-import DocumentsComp from '@/components/DocumentsComp.vue';
-import DocumentDetails from '@/components/DocumentDetails.vue';
-import DocumentUpload from '@/components/DocumentUpload.vue';
+import RegisterComp from '@/views/auth/RegisterView.vue';
+import LoginView from '@/views/auth/LoginView.vue';
+import BaseLayout from '@/views/dashboard/BaseLayout.vue'; // Umbenannt von DashboardView.vue
+import DashboardOverview from '@/components/dashboard/DashboardOverview.vue'; // Umbenannt von HomeComp.vue
+import DocumentsList from '@/components/documents/DocumentList.vue';
+import DocumentDetails from '@/components/documents/DocumentDetail.vue';
+import DocumentForm from '@/components/documents/DocumentForm.vue';
+import JournalEntryList from '@/components/journalEntries/JournalEntryList.vue';
+import JournalEntryForm from '@/components/journalEntries/JournalEntryForm.vue';
 import API_URL from '@/api';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {},
     {
       path: '/register',
       name: 'register',
       component: RegisterComp,
     },
     {
+      path: '/',
+      name: 'root',
+      component: LoginView,
+    },
+    {
       path: '/login',
       name: 'login',
-      component: LoginPage,
+      component: LoginView,
     },
     {
       path: '/logout',
@@ -35,27 +40,37 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: DashboardView,
+      component: BaseLayout,
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'home',
-          name: 'home',
-          component: DashboardComp,
+          path: 'overview', // Neuer Pfadname
+          name: 'dashboard-overview', // Neuer Name
+          component: DashboardOverview, // Neuer Name für die Komponente
         },
         {
           path: 'documents',
           name: 'documents',
-          component: DocumentsComp,
+          component: DocumentsList,
         },
         {
           path: '/documents/:id',
           component: DocumentDetails,
         },
         {
-          path: 'documents/upload',
-          name: 'document-upload',
-          component: DocumentUpload,
+          path: 'documents/form',
+          name: 'document-form',
+          component: DocumentForm,
+        },
+        {
+          path: 'journalentry',
+          name: 'journal-entry',
+          component: JournalEntryList,
+        },
+        {
+          path: 'journalentry/form',
+          name: 'journal-entry-form',
+          component: JournalEntryForm,
         },
       ],
     },

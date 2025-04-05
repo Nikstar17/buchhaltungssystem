@@ -325,7 +325,7 @@
   <!-- Modal für neue Steuerregel -->
   <div
     v-if="showTaxRateModal"
-    class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
   >
     <div class="bg-white p-6 rounded-xl shadow-lg w-1/3">
       <h2 class="text-lg font-bold mb-4">Neue Steuerregel hinzufügen</h2>
@@ -387,7 +387,7 @@
   <!-- Modal für neuen Lieferanten -->
   <div
     v-if="showSupplierModal"
-    class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
   >
     <div class="bg-white p-6 rounded-xl shadow-lg w-1/3">
       <h2 class="text-lg font-bold mb-4">Neuen Lieferanten hinzufügen</h2>
@@ -507,7 +507,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import API_URL from '@/api';
-import PdfViewer from './PdfViewer.vue';
+import PdfViewer from '../common/PdfViewer.vue';
 import {
   showSnackbar,
   snackbarMessage,
@@ -619,12 +619,21 @@ const handleSupplierChange = (event) => {
 
 const closeTaxRateModal = () => {
   showTaxRateModal.value = false;
-  newTaxRate.value = { name: '', value: '' };
+  newTaxRate.value = { name: '', percentage: '', valid_from: '' };
+  documentDetails.value.tax_rate_id = ''; // Reset the dropdown value for the main form
+
+  // Reset the dropdown value for all positions
+  positions.value.forEach((position) => {
+    if (position.tax_rate_id === 'add-new-taxrate') {
+      position.tax_rate_id = '';
+    }
+  });
 };
 
 const closeSupplierModal = () => {
   showSupplierModal.value = false;
   newSupplier.value = { name: '', address: '' };
+  documentDetails.value.supplier_id = ''; // Reset the dropdown value
 };
 
 const fetchTaxRates = async () => {

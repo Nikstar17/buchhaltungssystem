@@ -4,13 +4,21 @@
       <div class="space-y-4">
         <h1 class="text-2xl font-bold text-blue-600">📘 Buchhaltung</h1>
         <nav class="flex flex-col space-y-2">
-          <RouterLink to="/dashboard/home">📊 Dashboard</RouterLink>
-          <RouterLink to="/dashboard/documents">📎 Belege</RouterLink>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600"> <span>💸</span><span>Buchungen</span> </a>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600"> <span>🏷️</span><span>Kategorien</span> </a>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600"> <span>🏦</span><span>Konten</span> </a>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600"> <span>📊</span><span>Auswertungen</span> </a>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600"> <span>⚙️</span><span>Einstellungen</span> </a>
+          <RouterLink :to="{ name: 'dashboard-overview' }">📊 Dashboard</RouterLink>
+          <RouterLink :to="{ name: 'documents' }">📎 Belege</RouterLink>
+          <RouterLink :to="{ name: 'journal-entry' }">💸 Buchungen</RouterLink>
+          <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
+            <span>🏷️</span><span>Kategorien</span>
+          </a>
+          <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
+            <span>🏦</span><span>Konten</span>
+          </a>
+          <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
+            <span>📊</span><span>Auswertungen</span>
+          </a>
+          <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
+            <span>⚙️</span><span>Einstellungen</span>
+          </a>
         </nav>
       </div>
       <div class="mt-auto pt-4 border-t">
@@ -33,7 +41,7 @@ const router = useRouter();
 const logout = async () => {
   await fetch(`${API_URL}/logout`, {
     method: 'POST',
-    credentials: 'include' // Cookies werden mitgesendet
+    credentials: 'include', // Cookies werden mitgesendet
   });
   router.push({ name: 'login' });
 };

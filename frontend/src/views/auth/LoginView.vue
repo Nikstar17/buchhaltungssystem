@@ -61,7 +61,7 @@ const login = async () => {
   if (response.ok) {
     const decodedToken = jwtDecode(data.access_token);
     localStorage.setItem('access_token_exp', decodedToken.exp * 1000);
-    router.push({ name: 'home' });
+    router.push({ name: 'dashboard-overview' });
   } else {
     alert('Fehler bei der Anmeldung');
   }

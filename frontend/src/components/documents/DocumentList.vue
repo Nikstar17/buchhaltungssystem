@@ -1,16 +1,14 @@
 <template>
   <div class="flex min-h-screen">
     <main class="flex-1 p-6">
-      <div
-        class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0"
-      >
-        <button
-          @click="navigateToUpload"
+      <div class="mb-6 flex flex-row justify-between space-y-4 md:space-y-0">
+        <RouterLink
+          :to="{ name: 'document-form' }"
           class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center space-x-2"
         >
           <PlusIcon class="w-5 h-5" />
           <span>Beleg hochladen</span>
-        </button>
+        </RouterLink>
         <div class="flex space-x-2">
           <input
             type="text"
@@ -37,7 +35,9 @@
               v-for="document in documents"
               :key="document.id"
               class="border-b hover:bg-gray-50 cursor-pointer"
-              @click="navigateToUpdate(document.id)"
+              @click="goToDocumentDetail(document.id)"
+              tabindex="0"
+              role="button"
             >
               <td class="px-4 py-3">{{ document.status }}</td>
               <td class="px-4 py-3">
@@ -115,11 +115,7 @@ const getSupplierName = (supplierId) => {
   return supplier ? supplier.name : 'Unbekannt';
 };
 
-const navigateToUpload = () => {
-  router.push('/dashboard/documents/upload'); // Updated route
-};
-
-const navigateToUpdate = (documentId) => {
+const goToDocumentDetail = (documentId) => {
   router.push(`/documents/${documentId}`);
 };
 
