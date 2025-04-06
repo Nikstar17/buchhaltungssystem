@@ -28,6 +28,7 @@
               <th class="px-4 py-3">Belegnummer</th>
               <th class="px-4 py-3">Lieferant/Kunde</th>
               <th class="px-4 py-3">Belegdatum</th>
+              <th class="px-4 py-3">Gesamtbetrag</th>
             </tr>
           </thead>
           <tbody>
@@ -54,6 +55,9 @@
                   })
                 }}
               </td>
+              <td class="px-4 py-3">
+                {{ formatCurrency(getDocumentTotal(document.id) || 0) }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -74,6 +78,7 @@ import API_URL from '@/api';
 const router = useRouter();
 const documents = ref([]);
 const suppliers = ref([]);
+const documentLineItems = ref({}); // Speichert Line-Items pro Dokument-ID
 
 const fetchDocuments = async () => {
   try {
@@ -85,11 +90,46 @@ const fetchDocuments = async () => {
     if (response.ok) {
       const data = await response.json();
       documents.value = data.sort((a, b) => new Date(b.beleg_datum) - new Date(a.beleg_datum));
+
+      // Nach dem Laden der Dokumente die Line-Items für jedes Dokument abrufen
+      await fetchAllLineItems();
     } else {
       console.error('Fehler beim Laden der Belege:', response.statusText);
     }
   } catch (error) {
     console.error('Fehler beim Abrufen der Belege:', error);
+  }
+};
+
+const fetchAllLineItems = async () => {
+  try {
+    // Für jedes Dokument die Line-Items abrufen
+    for (const doc of documents.value) {
+      await fetchLineItemsForDocument(doc.id);
+    }
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Line-Items:', error);
+  }
+};
+
+const fetchLineItemsForDocument = async (documentId) => {
+  try {
+    const response = await fetch(`${API_URL}/api/documents/${documentId}/line_items`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      documentLineItems.value[documentId] = data.line_items;
+    } else {
+      console.error(
+        `Fehler beim Laden der Positionen für Dokument ${documentId}:`,
+        response.statusText
+      );
+    }
+  } catch (error) {
+    console.error(`Fehler beim Abrufen der Positionen für Dokument ${documentId}:`, error);
   }
 };
 
@@ -117,6 +157,34 @@ const getSupplierName = (supplierId) => {
 
 const goToDocumentDetail = (documentId) => {
   router.push(`/documents/${documentId}`);
+};
+
+const calculateDaysUntilDue = (dueDate) => {
+  if (!dueDate) return '-';
+  const today = new Date();
+  const due = new Date(dueDate);
+  const diffTime = due - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return `${Math.abs(diffDays)} Tage überfällig`;
+  } else if (diffDays === 0) {
+    return 'Heute fällig';
+  } else {
+    return `In ${diffDays} Tagen fällig`;
+  }
+};
+
+const getDocumentTotal = (documentId) => {
+  const lineItems = documentLineItems.value[documentId] || [];
+  return lineItems.reduce((sum, item) => sum + parseFloat(item.total_price), 0);
+};
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
 };
 
 onMounted(() => {

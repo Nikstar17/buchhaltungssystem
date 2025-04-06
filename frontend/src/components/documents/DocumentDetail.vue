@@ -1,54 +1,56 @@
 <template>
-  <div class="flex flex-row h-screen bg-gray-50">
-    <!-- File -->
-    <div class="w-2/5 overflow-y-auto p-6 rounded-lg">
-      <div v-if="fileType === 'image'" class="flex items-center justify-center">
-        <img :src="fileUrl" alt="Bildvorschau" class="max-w-full rounded-lg shadow-sm" />
-      </div>
-      <div v-if="fileType === 'pdf'" class="flex justify-center">
-        <div class="canvas-container pb-5 px-5">
-          <canvas ref="pdfCanvas" class="w-full rounded-lg shadow-sm"></canvas>
-        </div>
-      </div>
-    </div>
-
+  <div class="flex flex-col h-screen bg-gray-50 overflow-y-auto">
     <!-- Details -->
-    <div class="w-3/5 p-6">
+    <div class="p-5 max-w-6xl mx-auto w-full">
       <div
         v-if="document"
-        class="border border-gray-200 rounded-lg p-6 space-y-6 bg-white shadow-md"
+        class="border border-gray-200 rounded-xl p-8 space-y-6 bg-white shadow-lg"
       >
-        <div class="grid grid-cols-2 gap-6">
+        <div class="grid md:grid-cols-2 gap-8">
           <div>
-            <label class="block text-sm text-gray-500 font-medium mb-1">Status</label>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Status</label
+            >
             <p class="text-gray-800 font-semibold">
-              {{ document.status }}
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+              >
+                {{ document.status }}
+              </span>
             </p>
           </div>
 
           <div>
-            <label class="block text-sm text-gray-500 font-medium mb-1">Fälligkeit</label>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Fälligkeit</label
+            >
             <p class="text-gray-800 font-semibold">
               {{ document.due_date ? document.due_date : '-' }}
             </p>
           </div>
 
           <div>
-            <label class="block text-sm text-gray-500 font-medium mb-1">Belegnummer</label>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Belegnummer</label
+            >
             <p class="text-gray-800 font-semibold">
               {{ document.document_number }}
             </p>
           </div>
 
           <div>
-            <label class="block text-sm text-gray-500 font-medium mb-1">Lieferant/Kunde</label>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Lieferant/Kunde</label
+            >
             <p class="text-gray-800 font-semibold">
               {{ supplierName }}
             </p>
           </div>
 
           <div>
-            <label class="block text-sm text-gray-500 font-medium mb-1">Belegdatum</label>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Belegdatum</label
+            >
             <p class="text-gray-800 font-semibold">
               {{
                 new Date(document.issue_date).toLocaleDateString('de-DE', {
@@ -59,50 +61,94 @@
               }}
             </p>
           </div>
+          <div>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Summe</label
+            >
+            <p class="text-gray-800 font-semibold">
+              {{ formatCurrency(lineItems.reduce((sum, item) => sum + item.total_price, 0)) }}
+            </p>
+          </div>
         </div>
 
-        <div v-if="lineItems.length" class="mt-6">
-          <h2 class="text-xl font-semibold mb-4 text-gray-800">Positionen</h2>
+        <div v-if="lineItems.length" class="mt-8">
+          <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Positionen</h2>
 
-          <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-            <thead>
-              <tr class="bg-gray-100">
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Nr.</th>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Beschreibung</th>
-                <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Menge</th>
-                <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Einzelpreis</th>
-                <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Gesamtpreis</th>
-                <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Umsatzsteuer</th>
-              </tr>
-            </thead>
+          <div class="overflow-x-auto rounded-xl mt-4">
+            <table
+              class="min-w-full bg-white border border-gray-200 rounded-xl shadow-sm responsive-table"
+            >
+              <thead class="bg-gray-100 rounded-t-xl">
+                <tr>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Nr.
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Beschreibung
+                  </th>
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Menge
+                  </th>
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Einzelpreis
+                  </th>
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Gesamtpreis
+                  </th>
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600"
+                  >
+                    Umsatzsteuer
+                  </th>
+                </tr>
+              </thead>
 
-            <tbody>
-              <tr v-for="item in lineItems" :key="item.id" class="border-t hover:bg-gray-50">
-                <td class="px-4 py-2 text-sm text-gray-800">
-                  {{ item.line_number }}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-800">
-                  {{ item.description }}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-800 text-right">
-                  {{ item.quantity }}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-800 text-right">
-                  {{ item.unit_price }}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-800 text-right">
-                  {{ item.total_price }}
-                </td>
-                <td class="px-4 py-2 text-sm text-gray-800 text-right">
-                  {{ getTaxRatePercentage(item.tax_rate_id) }}%
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="flex justify-center mt-8">
+              <tbody>
+                <tr
+                  v-for="item in lineItems"
+                  :key="item.id"
+                  class="border-t hover:bg-blue-50 transition-colors duration-150"
+                >
+                  <td class="px-4 py-3 text-sm text-gray-800" data-label="Nr.">
+                    {{ item.line_number }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-800" data-label="Beschreibung">
+                    {{ item.description }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-800 text-right" data-label="Menge">
+                    {{ item.quantity }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-800 text-right" data-label="Einzelpreis">
+                    {{ formatCurrency(item.unit_price) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-800 text-right" data-label="Gesamtpreis">
+                    {{ formatCurrency(item.total_price) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-800 text-right" data-label="Umsatzsteuer">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      {{ getTaxRatePercentage(item.tax_rate_id) }}%
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-center mt-10">
             <button
               @click="showDeleteModal = true"
-              class="bg-red-400 text-white px-4 py-1 text-sm rounded shadow hover:bg-red-500 focus:outline-none focus:ring-1 focus:ring-red-300 focus:ring-offset-1 transition-transform transform hover:scale-102"
+              class="bg-red-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium"
             >
               Beleg löschen
             </button>
@@ -111,10 +157,10 @@
           <!-- Delete Confirmation Modal -->
           <div
             v-if="showDeleteModal"
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in"
           >
-            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">Beleg löschen</h2>
+            <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4 animate-scale-in">
+              <h2 class="text-xl font-bold text-gray-800 mb-4">Beleg löschen</h2>
               <p class="text-gray-600 mb-6">
                 Sind Sie sicher, dass Sie diesen Beleg löschen möchten? Diese Aktion kann nicht
                 rückgängig gemacht werden.
@@ -122,13 +168,13 @@
               <div class="flex justify-end space-x-4">
                 <button
                   @click="showDeleteModal = false"
-                  class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
                 >
                   Abbrechen
                 </button>
                 <button
                   @click="confirmDelete"
-                  class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
                 >
                   Löschen
                 </button>
@@ -138,13 +184,70 @@
 
           <div
             v-if="showSnackbar"
-            :class="snackbarType === 'success' ? 'bg-green-700' : 'bg-red-700'"
-            class="fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300"
+            :class="snackbarType === 'success' ? 'bg-green-600/90' : 'bg-red-600/90'"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-xl shadow-lg transition-opacity duration-300 flex items-center"
           >
+            <svg
+              v-if="snackbarType === 'success'"
+              class="h-5 w-5 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <svg
+              v-else
+              class="h-5 w-5 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             {{ snackbarMessage }}
           </div>
         </div>
-        <div v-else class="text-gray-500 italic mt-4">Beleg wird geladen...</div>
+        <div v-else class="text-gray-500 italic mt-4 text-center py-8">
+          <svg
+            class="w-12 h-12 mx-auto text-gray-300 mb-3"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16m-7 6h7"
+            />
+          </svg>
+          Beleg wird geladen...
+        </div>
+      </div>
+      <!-- File -->
+      <div class="rounded-xl mt-6 bg-white p-2 border border-gray-200 shadow-lg">
+        <div v-if="fileType === 'image'" class="flex items-center justify-center">
+          <img :src="fileUrl" alt="Bildvorschau" class="max-w-full rounded-lg shadow-sm" />
+        </div>
+        <div v-if="fileType === 'pdf'" class="flex justify-center">
+          <div class="canvas-container p-4">
+            <canvas ref="pdfCanvas" class="w-full rounded-lg shadow-sm"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -347,11 +450,85 @@ onMounted(() => {
   fetchDocumentFile();
   fetchTaxRates();
 });
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(value);
+};
 </script>
 
 <style scoped>
 /* Add subtle hover effects for table rows */
 table tbody tr:hover {
-  background-color: #f9fafb;
+  background-color: #f0f7ff;
+}
+
+/* Responsive table styles */
+@media (max-width: 767px) {
+  .responsive-table {
+    border: 0;
+  }
+
+  .responsive-table thead {
+    display: none;
+  }
+
+  .responsive-table tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    text-align: right;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+    color: #4b5563;
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>
