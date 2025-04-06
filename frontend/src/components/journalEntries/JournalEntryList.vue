@@ -19,6 +19,16 @@
         </div>
       </div>
       <!-- TODO: Tabelle aller Buchungen -->
+      <div class="bg-white shadow rounded-xl overflow-hidden">
+        <table v-if="10 == 110" class="min-w-full text-sm text-left">
+          <!-- TODO: v-if ändern-->
+          <thead class="bg-gray-100 border-b font-semibold"></thead>
+          <tbody></tbody>
+        </table>
+        <div v-else class="p-6 text-center text-gray-500">
+          Noch keine Buchungen. Erstelle deinen Buchung!
+        </div>
+      </div>
     </main>
   </div>
 </template>

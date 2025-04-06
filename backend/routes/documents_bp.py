@@ -1,7 +1,7 @@
 from werkzeug.utils import secure_filename
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import Document, Upload, LineItem, db
+from models import Document, Upload, LineItem, Currency, db
 
 ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}  # Erlaubte Dateitypen
 
@@ -21,16 +21,16 @@ def get_documents():
     result = [
         {
             "id": str(doc.id),
-            "document_type": doc.document_type,
-            "status": doc.status,
-            "number": doc.number,
-            "document_date": doc.document_date,
-            "supplier_id": doc.supplier_id,
-            "delivery_date": doc.delivery_date,
-            "link_id": doc.link_id,
-            "due_date": doc.due_date,
-            "cost_center_id": doc.cost_center_id,
-            "currency_code": doc.currency_code,
+            "document_number": doc.document_number, # Belegnummer
+            "document_type": doc.document_type,     # INCOME / EXPENSE (Ausgang / Eingang)
+            "status": doc.status,                   # Status des Belegs
+            "supplier_id": doc.supplier_id,         # LieferantID
+            "contact_id": doc.contact_id,           # KontaktID
+            "issue_date": doc.issue_date,           # Ausstellungsdatum / Belegdatum
+            "due_date": doc.due_date,               # Fälligkeitsdatum
+            "currency_id": doc.currency_id,         # WährungID
+            "is_posted": doc.is_posted,             # Flag für Buchungsstatus
+            "created_at": doc.created_at            # Erstelldatum
         }
         for doc in documents
     ]
@@ -62,24 +62,24 @@ def set_document():
         import base64
 
         file_content_base64 = base64.b64encode(file_content).decode("utf-8")
-        file_size = len(file_content)
 
         def parse_uuid_or_none(value):
             return value if value not in ("", "null", None) else None
 
-        # Neues Dokument erstellen
+        # Neues Dokument erstellen - angepasst an die Document-Klasse
         new_document = Document(
-            user_id=user_id,
-            document_type=data["document_type"],
+            user_id=parse_uuid_or_none(user_id),
+            document_number=data["number"],  # Belegnummer
+            document_type=data["document_type"],  # INCOME / EXPENSE
             status=data["status"],
-            number=data["number"],
-            document_date=data["document_date"],
-            supplier_id=data["supplier_id"],
-            delivery_date=data["delivery_date"],
-            link_id=parse_uuid_or_none(data["link_id"]),
-            due_date=data["due_date"] or None,
-            cost_center_id=parse_uuid_or_none(data["cost_center_id"]),
-            currency_code=data["currency_code"],
+            supplier_id=parse_uuid_or_none(data["supplier_id"]),
+            contact_id=parse_uuid_or_none(data.get("contact_id")),
+            issue_date=data["document_date"],  # Ausstellungsdatum / Belegdatum
+            due_date=data["due_date"] or None,  # Fälligkeitsdatum
+            currency_id=Currency.query.filter_by(code=data.get("currency_code", "EUR"))
+            .first()
+            .id,
+            is_posted=False,  # Standardwert für neue Dokumente
         )
 
         db.session.add(new_document)
@@ -87,11 +87,11 @@ def set_document():
 
         # Upload-Daten speichern mit Base64-Inhalt
         new_upload = Upload(
-            document_id=new_document.id,
             filename=filename,
             mimetype=file.mimetype,
-            file_size=file_size,
-            file_content=file_content_base64,
+            file_data=file_content_base64,
+            document_id=new_document.id,
+            user_id=parse_uuid_or_none(user_id),
         )
         db.session.add(new_upload)
         db.session.commit()
@@ -111,6 +111,8 @@ def set_document():
                         "quantity",
                         "unit_price",
                         "total_price",
+                        "category_id",
+                        "tax_rate_id"
                     ]
                 ):
                     return jsonify({"error": "Invalid position data"}), 400
@@ -123,8 +125,7 @@ def set_document():
                     unit_price=position["unit_price"],
                     total_price=position["total_price"],
                     category_id=parse_uuid_or_none(position.get("category_id")),
-                    tax_rate_id=position.get("tax_rate_id"),
-                    account_id=parse_uuid_or_none(position.get("account_id")),
+                    tax_rate_id=parse_uuid_or_none(position.get("tax_rate_id")),
                 )
                 db.session.add(new_line_item)
 
@@ -149,23 +150,23 @@ def set_document():
 @jwt_required()
 def get_document_by_id(id):
     user_id = get_jwt_identity()
-    document = Document.query.filter_by(id=id, user_id=user_id).first()
+    doc = Document.query.filter_by(id=id, user_id=user_id).first()
 
-    if not document:
+    if not doc:
         return jsonify({"error": "Document not found"}), 404
 
     result = {
-        "id": document.id,
-        "document_type": document.document_type,
-        "status": document.status,
-        "number": document.number,
-        "document_date": document.document_date,
-        "supplier_id": document.supplier_id,
-        "delivery_date": document.delivery_date,
-        "link_id": document.link_id,
-        "due_date": document.due_date,
-        "cost_center_id": document.cost_center_id,
-        "currency_code": document.currency_code,
+        "id": str(doc.id),
+        "document_number": doc.document_number, # Belegnummer
+        "document_type": doc.document_type,     # INCOME / EXPENSE (Ausgang / Eingang)
+        "status": doc.status,                   # Status des Belegs
+        "supplier_id": doc.supplier_id,         # LieferantID
+        "contact_id": doc.contact_id,           # KontaktID
+        "issue_date": doc.issue_date,           # Ausstellungsdatum / Belegdatum
+        "due_date": doc.due_date,               # Fälligkeitsdatum
+        "currency_id": doc.currency_id,         # WährungID
+        "is_posted": doc.is_posted,             # Flag für Buchungsstatus
+        "created_at": doc.created_at            # Erstelldatum
     }
     return jsonify(result), 200
 

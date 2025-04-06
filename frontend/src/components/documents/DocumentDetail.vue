@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row h-screen bg-gray-50">
     <!-- File -->
-    <div class="w-1/2 overflow-y-auto p-6 rounded-lg">
+    <div class="w-2/5 overflow-y-auto p-6 rounded-lg">
       <div v-if="fileType === 'image'" class="flex items-center justify-center">
         <img :src="fileUrl" alt="Bildvorschau" class="max-w-full rounded-lg shadow-sm" />
       </div>
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Details -->
-    <div class="w-1/2 p-6">
+    <div class="w-3/5 p-6">
       <div
         v-if="document"
         class="border border-gray-200 rounded-lg p-6 space-y-6 bg-white shadow-md"
@@ -25,29 +25,33 @@
               {{ document.status }}
             </p>
           </div>
+
           <div>
             <label class="block text-sm text-gray-500 font-medium mb-1">Fälligkeit</label>
             <p class="text-gray-800 font-semibold">
               {{ document.due_date ? document.due_date : '-' }}
             </p>
           </div>
+
           <div>
             <label class="block text-sm text-gray-500 font-medium mb-1">Belegnummer</label>
             <p class="text-gray-800 font-semibold">
-              {{ document.number }}
+              {{ document.document_number }}
             </p>
           </div>
+
           <div>
             <label class="block text-sm text-gray-500 font-medium mb-1">Lieferant/Kunde</label>
             <p class="text-gray-800 font-semibold">
               {{ supplierName }}
             </p>
           </div>
+
           <div>
             <label class="block text-sm text-gray-500 font-medium mb-1">Belegdatum</label>
             <p class="text-gray-800 font-semibold">
               {{
-                new Date(document.document_date).toLocaleDateString('de-DE', {
+                new Date(document.issue_date).toLocaleDateString('de-DE', {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
@@ -68,6 +72,7 @@
                 <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Menge</th>
                 <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Einzelpreis</th>
                 <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Gesamtpreis</th>
+                <th class="px-4 py-2 text-right text-sm font-medium text-gray-600">Umsatzsteuer</th>
               </tr>
             </thead>
 
@@ -87,6 +92,9 @@
                 </td>
                 <td class="px-4 py-2 text-sm text-gray-800 text-right">
                   {{ item.total_price }}
+                </td>
+                <td class="px-4 py-2 text-sm text-gray-800 text-right">
+                  {{ getTaxRatePercentage(item.tax_rate_id) }}%
                 </td>
               </tr>
             </tbody>
@@ -162,6 +170,7 @@ const router = useRouter();
 const document = ref(null);
 const suppliers = ref([]); // Assuming suppliers are fetched elsewhere or passed as props
 const lineItems = ref([]);
+const taxRates = ref([]); // Add taxRates ref
 
 const fetchDocumentDetails = async () => {
   try {
@@ -215,6 +224,28 @@ const fetchLineItems = async () => {
   }
 };
 
+const fetchTaxRates = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/tax_rates`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      taxRates.value = await response.json();
+    } else {
+      console.error('Fehler beim Laden der Steuersätze:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Steuersätze:', error);
+  }
+};
+
+const getTaxRatePercentage = (taxRateId) => {
+  const taxRate = taxRates.value.find((rate) => rate.id === taxRateId);
+  return taxRate ? taxRate.percentage : 'Unbekannt';
+};
+
 const supplierName = computed(() => {
   const supplier = suppliers.value.find((s) => s.id === document.value?.supplier_id);
   return supplier ? supplier.name : 'Unbekannt';
@@ -247,14 +278,15 @@ const fetchDocumentFile = async () => {
 
     if (response.ok) {
       const data = await response.json();
-      const { file_type, content } = data;
+      // Update to match the backend response field names
+      const { mimetype, file_data } = data;
 
-      if (file_type.startsWith('image/')) {
+      if (mimetype.startsWith('image/')) {
         fileType.value = 'image';
-        fileUrl.value = `data:${file_type};base64,${content}`;
-      } else if (file_type === 'application/pdf') {
+        fileUrl.value = `data:${mimetype};base64,${file_data}`;
+      } else if (mimetype === 'application/pdf') {
         fileType.value = 'pdf';
-        const arrayBuffer = Uint8Array.from(atob(content), (c) => c.charCodeAt(0)).buffer;
+        const arrayBuffer = Uint8Array.from(atob(file_data), (c) => c.charCodeAt(0)).buffer;
         pdfDocument = await pdfjsLib.getDocument({
           data: arrayBuffer,
         }).promise;
@@ -313,6 +345,7 @@ onMounted(() => {
   fetchDocumentDetails();
   fetchLineItems();
   fetchDocumentFile();
+  fetchTaxRates();
 });
 </script>
 

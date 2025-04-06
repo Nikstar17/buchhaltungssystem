@@ -1,5 +1,5 @@
 <template>
-  <div class="image-preview flex items-center justify-center">
+  <div class="image-preview flex items-center justify-center h-screen">
     <div class="relative">
       <XMarkIcon
         @click="$emit('delete')"

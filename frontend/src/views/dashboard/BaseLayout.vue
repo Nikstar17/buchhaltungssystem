@@ -26,7 +26,7 @@
         <button @click="logout" class="bg-red-100 text-red-600 px-3 py-1 rounded">Logout</button>
       </div>
     </aside>
-    <main class="flex-1">
+    <main class="flex-1 h-screen">
       <RouterView />
     </main>
   </div>

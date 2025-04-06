@@ -7,16 +7,37 @@ from .enum import account_type_enum
 
 
 class Account(db.Model):
+    """
+    Repräsentiert ein Konto im Buchhaltungsplan (Kontenrahmen).
+    Diese Klasse bildet die Grundlage für die doppelte Buchführung und definiert
+    die verschiedenen Konten wie Aktivkonten, Passivkonten, Ertrags- und Aufwandskonten.
+    Jedes Konto hat eine eindeutige Nummer und ist einem bestimmten Kontotyp zugeordnet.
+    Konten können hierarchisch strukturiert sein und einem Kontenrahmen zugeordnet werden.
+    """
+
     __tablename__ = "accounts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    chart_of_accounts_id = Column(UUID(as_uuid=True), ForeignKey("chart_of_accounts.id"), nullable=False)
+    chart_of_accounts_id = Column(
+        UUID(as_uuid=True), ForeignKey("chart_of_accounts.id"), nullable=False
+    )  # Zugehöriger Kontenrahmen
 
-    parent_id = Column(UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=True)  # ← Hierarchie!
+    parent_id = Column(
+        UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=True
+    )  # Übergeordnetes Konto (für Hierarchie)
     children = relationship("Account", backref=backref("parent", remote_side=[id]))
 
-    number = Column(String, nullable=False)  # z. B. '4400'
-    name = Column(String, nullable=False)    # z. B. 'Mietaufwand'
-    type = Column(account_type_enum, nullable=False)  # ENUM: ASSET, EXPENSE, etc.
-    level = Column(Integer, nullable=True)  # z. B. 1=Hauptgruppe, 2=Gruppe, 3=Einzelkonto
-    active = Column(Boolean, nullable=False, default=True)
+    tax_rate_id = Column(
+        UUID(as_uuid=True), ForeignKey("tax_rates.id"), nullable=True
+    )  # Zugehöriger Steuersatz
+    tax_rate = relationship("TaxRate", foreign_keys=[tax_rate_id])
+
+    number = Column(String, nullable=False)  # Kontonummer
+    name = Column(String, nullable=False)  # Kontoname
+    type = Column(
+        account_type_enum, nullable=False
+    )  # Kontotyp: ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+    level = Column(Integer, nullable=True)  # Hierarchietiefe
+    active = Column(
+        Boolean, nullable=False, default=True
+    )  # Zeigt an, ob das Konto aktiv ist

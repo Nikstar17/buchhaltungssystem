@@ -27,7 +27,7 @@
               <th class="px-4 py-3">Fälligkeit</th>
               <th class="px-4 py-3">Belegnummer</th>
               <th class="px-4 py-3">Lieferant/Kunde</th>
-              <th class="px-4 py-3">Datum</th>
+              <th class="px-4 py-3">Belegdatum</th>
             </tr>
           </thead>
           <tbody>
@@ -43,11 +43,11 @@
               <td class="px-4 py-3">
                 {{ document.due_date ? calculateDaysUntilDue(document.due_date) : '-' }}
               </td>
-              <td class="px-4 py-3">{{ document.number }}</td>
+              <td class="px-4 py-3">{{ document.document_number }}</td>
               <td class="px-4 py-3">{{ getSupplierName(document.supplier_id) }}</td>
               <td class="px-4 py-3">
                 {{
-                  new Date(document.document_date).toLocaleDateString('de-DE', {
+                  new Date(document.issue_date).toLocaleDateString('de-DE', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',

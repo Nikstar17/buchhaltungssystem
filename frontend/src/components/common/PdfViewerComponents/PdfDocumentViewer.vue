@@ -1,5 +1,5 @@
 <template>
-  <div class="pdf-document-viewer">
+  <div class="pdf-document-viewer h-screen">
     <!-- Schließen-Button -->
     <div class="relative">
       <XMarkIcon
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Navigation -->
-    <div class="pdf-controls flex justify-evenly mx-auto sticky top-0 z-10 bg-gray-50 py-5">
+    <div class="flex justify-evenly mx-auto sticky top-0 z-10 bg-gray-50 py-5">
       <button
         @click="$emit('prev-page')"
         :disabled="currentPage <= 1"
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Canvas-Container -->
-    <div class="canvas-container mx-auto pb-5 px-5">
+    <div class="canvas-container">
       <slot></slot>
     </div>
   </div>
@@ -60,16 +60,11 @@ defineEmits(['delete', 'prev-page', 'next-page']);
   width: 100%;
 }
 
-.pdf-controls {
-  border-bottom: 1px solid #e5e7eb;
-}
-
 .page-info {
   font-weight: 500;
 }
 
 .canvas-container {
   width: 100%;
-  max-width: 800px;
 }
 </style>

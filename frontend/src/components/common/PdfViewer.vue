@@ -1,12 +1,12 @@
 <template>
-  <div class="pdf-viewer">
-    <!-- Datei-Upload Bereich -->
+  <div class="pdf-viewer h-screen">
+    <!-- File upload area -->
     <file-upload-area v-if="!fileUploaded" @file-selected="handleFileChange" />
 
-    <!-- Bild-Anzeige -->
+    <!-- Image display -->
     <image-preview v-if="fileType === 'image'" :src="fileUrl" @delete="deleteFile" />
 
-    <!-- PDF-Anzeige -->
+    <!-- PDF display -->
     <pdf-document-viewer
       v-if="fileType === 'pdf'"
       :current-page="currentPage"
@@ -24,9 +24,9 @@
 import { ref, defineAsyncComponent } from 'vue';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import { XMarkIcon } from '@heroicons/vue/24/solid';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
 
-// Komponenten für bessere Lesbarkeit und Wartbarkeit
+// Components for better readability and maintainability
 const FileUploadArea = defineAsyncComponent(() =>
   import('./PdfViewerComponents/FileUploadArea.vue')
 );
@@ -35,13 +35,13 @@ const PdfDocumentViewer = defineAsyncComponent(() =>
   import('./PdfViewerComponents/PdfDocumentViewer.vue')
 );
 
-// PDF.js Worker initialisieren
+// Initialize PDF.js Worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-// Emits definieren
+// Define emits
 const emit = defineEmits(['file-selected', 'file-deleted']);
 
-// Zustandsvariablen
+// State variables
 const fileUrl = ref(null);
 const fileType = ref(null);
 const pdfCanvas = ref(null);
@@ -51,14 +51,14 @@ const fileUploaded = ref(false);
 let pdfDocument = null;
 
 /**
- * Rendert eine PDF-Seite im Canvas
+ * Renders a PDF page in the canvas
  */
 const renderPage = async (pageNumber) => {
   if (!pdfDocument) return;
 
   const page = await pdfDocument.getPage(pageNumber);
 
-  // Höhere Qualität für bessere Lesbarkeit
+  // Higher quality for better readability
   const highQualityScale = 3;
   const viewport = page.getViewport({ scale: highQualityScale });
 
@@ -73,7 +73,7 @@ const renderPage = async (pageNumber) => {
 };
 
 /**
- * Verarbeitet die Dateiauswahl
+ * Processes file selection
  */
 const handleFileChange = async (event) => {
   const file = event.target.files?.[0];
@@ -84,12 +84,12 @@ const handleFileChange = async (event) => {
 
   try {
     if (fileMime.startsWith('image/')) {
-      // Bildverarbeitung
+      // Image processing
       fileType.value = 'image';
       fileUrl.value = URL.createObjectURL(file);
       emit('file-selected', file);
     } else if (fileMime === 'application/pdf') {
-      // PDF-Verarbeitung
+      // PDF processing
       fileType.value = 'pdf';
       const arrayBuffer = await file.arrayBuffer();
       pdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -98,20 +98,23 @@ const handleFileChange = async (event) => {
       await renderPage(currentPage.value);
       emit('file-selected', file);
     } else {
-      // Nicht unterstütztes Format
+      // Unsupported format
       fileType.value = null;
       fileUrl.value = null;
-      alert('Nur PDF, PNG oder JPG werden unterstützt.');
+      showSnackbarMessage('Nur PDF, PNG oder JPG werden unterstützt.', 'error');
     }
   } catch (error) {
-    console.error('Fehler beim Verarbeiten der Datei:', error);
-    alert('Fehler beim Verarbeiten der Datei. Bitte versuchen Sie es erneut.');
+    console.error('Error processing file:', error);
+    showSnackbarMessage(
+      'Fehler beim Verarbeiten der Datei. Bitte versuchen Sie es erneut.',
+      'error'
+    );
     deleteFile();
   }
 };
 
 /**
- * Navigation: Nächste PDF-Seite
+ * Navigation: Next PDF page
  */
 const nextPage = async () => {
   if (currentPage.value < totalPages.value) {
@@ -121,7 +124,7 @@ const nextPage = async () => {
 };
 
 /**
- * Navigation: Vorherige PDF-Seite
+ * Navigation: Previous PDF page
  */
 const prevPage = async () => {
   if (currentPage.value > 1) {
@@ -131,14 +134,14 @@ const prevPage = async () => {
 };
 
 /**
- * Löscht die aktuell angezeigte Datei
+ * Deletes the currently displayed file
  */
 const deleteFile = () => {
   if (fileUrl.value) {
     URL.revokeObjectURL(fileUrl.value);
   }
 
-  // Zustand zurücksetzen
+  // Reset state
   fileUrl.value = null;
   fileType.value = null;
   fileUploaded.value = false;
@@ -149,20 +152,10 @@ const deleteFile = () => {
   emit('file-deleted', null);
 };
 
-// Methoden für externe Komponenten verfügbar machen
+// Make methods available for external components
 defineExpose({
   deleteFile,
 });
 </script>
 
-<style scoped>
-.pdf-viewer {
-  width: 100%;
-  height: 100%;
-}
-
-canvas {
-  display: block;
-  max-width: 100%;
-}
-</style>
+<style scoped></style>

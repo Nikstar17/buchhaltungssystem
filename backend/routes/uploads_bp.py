@@ -82,8 +82,10 @@ def get_file_base64(document_id):
             jsonify(
                 {
                     "file_name": upload.filename,
-                    "file_type": upload.mimetype,
-                    "content": upload.file_content,
+                    "mimetype": upload.mimetype,
+                    "file_data": upload.file_data,
+                    "document_id": upload.document_id,
+                    "uploaded_at": upload.uploaded_at,
                 }
             ),
             200,

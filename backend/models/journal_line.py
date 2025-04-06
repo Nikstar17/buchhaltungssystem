@@ -8,15 +8,33 @@ from .enum import side_enum
 
 
 class JournalLine(db.Model):
+    """
+    Repräsentiert eine einzelne Buchungszeile in der Buchhaltung.
+    Diese Klasse bildet eine Seite (Soll/Haben) einer Buchung ab und verknüpft
+    einen Buchungsbetrag mit einem Konto. Jede Buchungszeile ist Teil eines Buchungssatzes
+    (JournalEntry) und kann optional weitere Informationen wie Steuersatz,
+    Kostenstelle und verknüpfte Belegposition enthalten.
+    """
+
     __tablename__ = "journal_lines"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    journal_entry_id = Column(UUID(as_uuid=True), ForeignKey("journal_entries.id"), nullable=False)  # Buchungskopf
-    account_id = Column(UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=False)                # Konto
-    amount = Column(Numeric, nullable=False)                                                          # Betrag
-    side = Column(side_enum, nullable=False)                                                          # DEBIT / CREDIT
+    journal_entry_id = Column(
+        UUID(as_uuid=True), ForeignKey("journal_entries.id"), nullable=False
+    )  # Buchungskopf
+    account_id = Column(
+        UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=False
+    )  # Konto
+    amount = Column(Numeric, nullable=False)  # Betrag
+    side = Column(side_enum, nullable=False)  # DEBIT / CREDIT
 
-    tax_rate_id = Column(UUID(as_uuid=True), ForeignKey("tax_rates.id"), nullable=True)               # Optionaler Steuersatz
-    cost_center_id = Column(UUID(as_uuid=True), ForeignKey("cost_centers.id"), nullable=True)         # Kostenstelle
-    line_item_id = Column(UUID(as_uuid=True), ForeignKey("line_items.id"), nullable=True)             # Verknüpfte Belegposition
+    tax_rate_id = Column(
+        UUID(as_uuid=True), ForeignKey("tax_rates.id"), nullable=True
+    )  # Optionaler Steuersatz
+    cost_center_id = Column(
+        UUID(as_uuid=True), ForeignKey("cost_centers.id"), nullable=True
+    )  # Kostenstelle
+    line_item_id = Column(
+        UUID(as_uuid=True), ForeignKey("line_items.id"), nullable=True
+    )  # Verknüpfte Belegposition

@@ -27,8 +27,7 @@ def get_line_items(document_id):
                 "unit_price": float(item.unit_price),
                 "total_price": float(item.total_price),
                 "category_id": item.category_id,
-                "tax_rate_id": item.tax_rate_id,
-                "account_id": item.account_id,
+                "tax_rate_id": item.tax_rate_id
             }
             for item in line_items
         ]

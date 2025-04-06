@@ -1,5 +1,8 @@
 .env
 */venv
+Kontorahmen und Taxonomie
+backend/skr04_with_tax_rates.json
+backend/import_skr04.py
 
 # Logs
 logs
