@@ -239,20 +239,35 @@
 
       <!-- Restbetrag anzeigen (wenn vorhanden) -->
       <div
-        v-if="remainingAmount > 0"
-        class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200"
+        v-if="remainingAmount !== 0"
+        class="mt-4 p-4 rounded-lg border"
+        :class="remainingAmount > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'"
       >
         <div class="flex justify-between items-center">
           <div>
             <p class="text-sm font-medium text-gray-700">
-              Restbetrag: <span class="font-semibold">{{ formatCurrency(remainingAmount) }}</span>
+              Restbetrag:
+              <span
+                class="font-semibold"
+                :class="remainingAmount > 0 ? 'text-yellow-700' : 'text-red-700'"
+              >
+                {{ formatCurrency(remainingAmount) }}
+              </span>
             </p>
           </div>
           <button
+            v-if="remainingAmount > 0"
             @click="createRemainingBooking"
             class="px-5 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
           >
             Restbetrag buchen
+          </button>
+          <button
+            v-else
+            @click="createRemainingBooking"
+            class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Differenz buchen
           </button>
         </div>
       </div>

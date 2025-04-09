@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 from .account import Account
+from .account_explanation import AccountExplanation
+from .account_hierarchy import AccountHierarchy
 from .auto_booking_rule import AutoBookingRule
 from .bank_account import BankAccount
 from .category import Category

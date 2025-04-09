@@ -39,11 +39,13 @@ import { ref } from 'vue';
 import API_URL from '@/api';
 import { useRouter } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
+import { useUserStore } from '@/stores/user';
+
+const router = useRouter();
+const userStore = useUserStore();
 
 const email = ref('');
 const password = ref('');
-const message = ref('');
-const router = useRouter();
 
 const login = async () => {
   const response = await fetch(`${API_URL}/login`, {
@@ -61,6 +63,15 @@ const login = async () => {
   if (response.ok) {
     const decodedToken = jwtDecode(data.access_token);
     localStorage.setItem('access_token_exp', decodedToken.exp * 1000);
+
+    // Benutzerdaten im UserStore speichern
+    userStore.setEmail(decodedToken.email);
+    userStore.setFirstName(decodedToken.first_name);
+    userStore.setLastName(decodedToken.last_name);
+    if (decodedToken.id) {
+      userStore.setId(decodedToken.id);
+    }
+
     router.push({ name: 'dashboard-overview' });
   } else {
     alert('Fehler bei der Anmeldung');

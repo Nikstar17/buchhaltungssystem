@@ -39,6 +39,12 @@ class User(db.Model):
     city = Column(String, nullable=True)
     country = Column(String, nullable=True)
 
+    chart_of_accounts_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("chart_of_accounts.id"),
+        nullable=True
+    )  # Referenz auf den vom Benutzer verwendeten Kontenrahmen
+
     @property
     def password(self):
         raise AttributeError("Passwort kann nicht gelesen werden.")

@@ -16,17 +16,22 @@
           <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
             <span>📊</span><span>Auswertungen</span>
           </a>
-          <a href="#" class="flex items-center space-x-2 hover:text-blue-600">
+          <RouterLink
+            :to="{ name: 'settings' }"
+            class="flex items-center space-x-2 hover:text-blue-600"
+          >
             <span>⚙️</span><span>Einstellungen</span>
-          </a>
+          </RouterLink>
         </nav>
       </div>
       <div class="mt-auto pt-4 border-t">
-        <span class="text-gray-600 block mb-2">👤 Max Mustermann</span>
+        <span class="text-gray-600 block mb-2"
+          >👤 {{ userStore.first_name }} {{ userStore.last_name }}</span
+        >
         <button @click="logout" class="bg-red-100 text-red-600 px-3 py-1 rounded">Logout</button>
       </div>
     </aside>
-    <main class="flex-1 h-screen">
+    <main class="flex-1 h-screen overflow-y-auto">
       <RouterView />
     </main>
   </div>
@@ -35,14 +40,20 @@
 <script setup>
 import API_URL from '@/api'; // API_URL importieren
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
 
 const router = useRouter();
+const userStore = useUserStore();
 
 const logout = async () => {
   await fetch(`${API_URL}/logout`, {
     method: 'POST',
     credentials: 'include', // Cookies werden mitgesendet
   });
+  // UserStore und localStorage leeren
+  userStore.clearUserData();
+  // Access token aus localStorage entfernen
+  localStorage.removeItem('access_token_exp');
   router.push({ name: 'login' });
 };
 </script>

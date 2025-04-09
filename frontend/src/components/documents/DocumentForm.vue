@@ -937,26 +937,6 @@ const updateFileUploaded = (fileDetails) => {
   documentDetails.value.file_size = fileDetails.size;
 };
 
-const handleFileChange = (event) => {
-  if (event.target.files.length > 0) {
-    const file = event.target.files[0];
-    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB in bytes
-
-    // Überprüfen der Dateigröße
-    if (file.size > MAX_FILE_SIZE) {
-      showSnackbarMessage('Die Datei ist zu groß. Maximale Dateigröße: 2 MB.', 'error');
-      // Reset file input
-      if (pdfViewerRef.value) {
-        pdfViewerRef.value.deleteFile();
-      }
-      return;
-    }
-
-    // Wenn die Größe OK ist, Datei verarbeiten
-    updateFileUploaded(file);
-  }
-};
-
 const uploadDocument = async () => {
   const formData = new FormData();
 

@@ -2,13 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
 import RegisterComp from '@/views/auth/RegisterView.vue';
 import LoginView from '@/views/auth/LoginView.vue';
-import BaseLayout from '@/views/dashboard/BaseLayout.vue'; // Umbenannt von DashboardView.vue
-import DashboardOverview from '@/components/dashboard/DashboardOverview.vue'; // Umbenannt von HomeComp.vue
+import BaseLayout from '@/views/dashboard/BaseLayout.vue';
+import DashboardOverview from '@/components/dashboard/DashboardOverview.vue';
 import DocumentsList from '@/components/documents/DocumentList.vue';
 import DocumentDetails from '@/components/documents/DocumentDetail.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import JournalEntryList from '@/components/journalEntries/JournalEntryList.vue';
 import JournalEntryForm from '@/components/journalEntries/JournalEntryForm.vue';
+import SettingsOverview from '@/components/settings/SettingsOverview.vue';
+import UserSettings from '@/components/settings/UserSettings.vue';
 import API_URL from '@/api';
 
 const router = createRouter({
@@ -71,6 +73,16 @@ const router = createRouter({
           path: 'journalentry/form',
           name: 'journal-entry-form',
           component: JournalEntryForm,
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: SettingsOverview,
+        },
+        {
+          path: 'settings/profile',
+          name: 'user-settings',
+          component: UserSettings,
         },
       ],
     },

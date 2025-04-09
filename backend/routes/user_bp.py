@@ -77,11 +77,17 @@ def login_user():
         return jsonify({"error": "Invalid JSON data"}), 400
 
     user = User.query.filter_by(email=data["email"]).first()
-    print(user)
 
     try:
         if user and user.check_password(data["password"]):
-            access_token = create_access_token(identity=user.id)
+            # Zusätzliche Benutzerdaten zum Token hinzufügen
+            additional_claims = {
+                "email": user.email,
+                "first_name": decrypt(user.first_name),
+                "last_name": decrypt(user.last_name)
+            }
+
+            access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
             refresh_token = create_refresh_token(identity=user.id)
 
             response = jsonify(
@@ -109,7 +115,7 @@ def get_current_user():
         jsonify(
             {
                 "id": str(user.id),
-                "email": decrypt(user.email),
+                "email": user.email,
                 "first_name": decrypt(user.first_name),
                 "last_name": decrypt(user.last_name),
                 "street": decrypt(user.street),
@@ -122,6 +128,62 @@ def get_current_user():
         200,
     )
 
+@user_bp.route("/user", methods=["PUT"])
+@jwt_required()
+def update_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid JSON data"}), 400
+
+    def update_field(field_name):
+        value = data.get(field_name)
+        if value:  # Wert ist nicht None und nicht leer
+            setattr(user, field_name, encrypt(value))
+
+    update_field("first_name")
+    update_field("last_name")
+    update_field("street")
+    update_field("house_number")
+    update_field("postal_code")
+    update_field("city")
+    update_field("country")
+
+    try:
+        db.session.commit()
+
+        # Neuen Token mit aktualisierten Benutzerdaten erstellen
+        additional_claims = {
+            "email": user.email,
+            "first_name": decrypt(user.first_name),
+            "last_name": decrypt(user.last_name)
+        }
+
+        # Neuen Access-Token erstellen und in Cookies setzen
+        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+
+        response = jsonify({
+            "message": "User updated successfully",
+            "access_token": access_token,
+            "user": {
+                "email": user.email,
+                "first_name": decrypt(user.first_name),
+                "last_name": decrypt(user.last_name)
+            }
+        })
+
+        # Neuen Token in Cookies setzen
+        set_access_cookies(response, access_token)
+
+        return response, 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 @user_bp.route("/user", methods=["DELETE"])
 @jwt_required()

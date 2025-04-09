@@ -69,6 +69,16 @@
               {{ formatCurrency(lineItems.reduce((sum, item) => sum + item.total_price, 0)) }}
             </p>
           </div>
+
+          <!-- Ensure Restbetrag is always displayed -->
+          <div>
+            <label class="block text-xs uppercase tracking-wide text-gray-500 font-medium mb-1"
+              >Restbetrag</label
+            >
+            <p class="text-gray-800 font-semibold" :class="{ 'text-red-600': remainingAmount < 0 }">
+              {{ formatCurrency(remainingAmount) }}
+            </p>
+          </div>
         </div>
 
         <div v-if="lineItems.length" class="mt-8">
@@ -457,6 +467,17 @@ const formatCurrency = (value) => {
     currency: 'EUR',
   }).format(value);
 };
+
+// Update computed property for remaining amount
+const remainingAmount = computed(() => {
+  if (!document.value || !document.value.total_amount) return 0;
+
+  const totalSelected = lineItems.value.reduce((sum, item) => sum + item.total_price, 0);
+  const documentTotal = parseFloat(document.value.total_amount);
+
+  // Allow negative values when totalSelected exceeds documentTotal
+  return documentTotal - totalSelected;
+});
 </script>
 
 <style scoped>
