@@ -33,6 +33,20 @@ class ChartOfAccountsService {
   }
 
   /**
+   * Alle Konten eines Kontenrahmens abrufen
+   * @param {string} chartId - ID des Kontenrahmens
+   * @returns {Promise<Array>} Liste der Konten
+   */
+  static async getAccounts(chartId) {
+    try {
+      return await ApiService.get(`/api/chart-of-accounts/${chartId}/accounts`);
+    } catch (error) {
+      console.error(`Fehler beim Abrufen der Konten für Kontenrahmen ${chartId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Neuen Kontenrahmen erstellen
    * @param {Object} chartData - Kontenrahmendaten
    * @returns {Promise<Object>} Erstellter Kontenrahmen

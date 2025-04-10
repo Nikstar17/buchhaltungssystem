@@ -132,7 +132,9 @@ def get_chart_accounts(chart_id):
         'type': str(account.type),
         'active': account.active,
         'description': account.description,
-        'account_group': account.account_group
+        'account_group': account.account_group,
+        'account_class': account.account_class,
+        'related_accounts': account.related_accounts  # Hinzugefügt, um die verwandten Konten anzuzeigen
         }
         result.append(account_data)
 

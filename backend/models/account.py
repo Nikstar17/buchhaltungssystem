@@ -28,9 +28,6 @@ class Account(db.Model):
     type = Column(account_type_enum, nullable=False)  # Kontotyp: ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
     active = Column(Boolean, nullable=False, default=True)  # Zeigt an, ob das Konto aktiv ist
 
-    # Beziehung zur Kontenhierarchie-Tabelle
-    hierarchy = relationship("AccountHierarchy", uselist=False, back_populates="account", cascade="all, delete-orphan")
-
     # Beziehung zu den Erläuterungen
     explanations = relationship("AccountExplanation", back_populates="account", cascade="all, delete-orphan")
 
