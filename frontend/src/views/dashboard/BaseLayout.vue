@@ -38,23 +38,22 @@
 </template>
 
 <script setup>
-import API_URL from '@/api'; // API_URL importieren
-import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
+import { useRouter } from 'vue-router';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import { AuthService } from '@/services';
 
-const router = useRouter();
 const userStore = useUserStore();
+const router = useRouter();
 
 const logout = async () => {
-  await fetch(`${API_URL}/logout`, {
-    method: 'POST',
-    credentials: 'include', // Cookies werden mitgesendet
-  });
-  // UserStore und localStorage leeren
-  userStore.clearUserData();
-  // Access token aus localStorage entfernen
-  localStorage.removeItem('access_token_exp');
-  router.push({ name: 'login' });
+  try {
+    await AuthService.logout();
+    userStore.$reset();
+    router.push('/login');
+  } catch (error) {
+    showSnackbarMessage('Fehler beim Abmelden', 'error');
+  }
 };
 </script>
 

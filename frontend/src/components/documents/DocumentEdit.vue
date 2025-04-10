@@ -166,6 +166,7 @@
 
 <script setup>
 import { reactive, watch, ref } from 'vue';
+import { DocumentService } from '@/services';
 import API_URL from '@/api';
 
 const props = defineProps({
@@ -271,34 +272,15 @@ const updateDocument = async () => {
 const confirmDelete = async () => {
   showDeleteModal.value = false;
   try {
-    const csrfToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
+    // Use the service to delete the document
+    await DocumentService.deleteDocument(props.document.id);
 
-    if (!csrfToken) {
-      displaySnackbar('CSRF-Token fehlt. Bitte melden Sie sich erneut an.', 'error');
-      window.location.href = '/login';
-      return;
-    }
-
-    const response = await fetch(`${API_URL}/api/documents/${props.document.id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      displaySnackbar('Dokument erfolgreich gelöscht.');
-      emit('document-deleted');
-    } else {
-      displaySnackbar('Fehler beim Löschen des Dokuments.', 'error');
-    }
+    // Display success message and notify parent component
+    displaySnackbar('Dokument erfolgreich gelöscht.');
+    emit('document-deleted');
   } catch (error) {
-    console.error('Fehler beim Löschen:', error);
-    displaySnackbar('Ein unerwarteter Fehler ist aufgetreten.', 'error');
+    console.error('Fehler beim Löschen des Dokuments:', error);
+    displaySnackbar(error.message || 'Ein unerwarteter Fehler ist aufgetreten.', 'error');
   }
 };
 </script>

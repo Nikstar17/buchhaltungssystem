@@ -49,6 +49,7 @@ const validateFileSize = (file) => {
 const handleFileDrop = (event) => {
   isDragging.value = false;
   const files = event.dataTransfer.files;
+  console.log(files);
   if (files.length > 0) {
     // Prüfe die Dateigröße
     if (!validateFileSize(files[0])) {

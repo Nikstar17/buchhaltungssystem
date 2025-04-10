@@ -442,40 +442,6 @@
     </div>
   </div>
 
-  <!-- Snackbar -->
-  <div
-    v-if="showSnackbar"
-    :class="snackbarType === 'success' ? 'bg-green-600/90' : 'bg-red-600/90'"
-    class="fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300 flex items-center"
-  >
-    <svg
-      v-if="snackbarType === 'success'"
-      class="h-5 w-5 mr-2"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-    </svg>
-    <svg
-      v-else
-      class="h-5 w-5 mr-2"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    {{ snackbarMessage }}
-  </div>
-
   <!-- Modal für neue Steuerregel -->
   <div
     v-if="showTaxRateModal"
@@ -675,12 +641,8 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import API_URL from '@/api';
 import PdfViewer from '../common/PdfViewer.vue';
-import {
-  showSnackbar,
-  snackbarMessage,
-  snackbarType,
-  showSnackbarMessage,
-} from '@/composables/useSnackbar';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import { SupplierService, TaxRateService } from '@/services';
 
 const pdfViewerRef = ref(null); // Referenz auf den PdfViewer
 
@@ -816,67 +778,35 @@ const closeSupplierModal = () => {
   documentDetails.value.supplier_id = ''; // Reset the dropdown value
 };
 
-const fetchTaxRates = async () => {
+const getTaxRates = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/tax_rates`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      taxRates.value = await response.json();
-    } else {
-      console.error('Fehler beim Abrufen der Umsatzsteuersätze');
-    }
+    taxRates.value = await TaxRateService.getTaxRates();
   } catch (error) {
-    console.error('API-Fehler:', error);
+    console.error('Fehler beim Abrufen der Taxrates');
   }
 };
 
-const fetchSuppliers = async () => {
+const getSuppliers = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/suppliers`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      suppliers.value = await response.json();
-    } else {
-      console.error('Fehler beim Abrufen der Lieferanten');
-    }
+    suppliers.value = await SupplierService.getSuppliers();
   } catch (error) {
-    console.error('API-Fehler:', error);
+    console.error('Fehler beim Abrufen der Lieferanten');
   }
 };
 
 const addNewTaxRate = async () => {
   try {
-    const csrfToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
+    // Use TaxRateService to create a new tax rate
+    const createdTaxRate = await TaxRateService.createTaxRate(newTaxRate.value);
 
-    const response = await fetch(`${API_URL}/api/tax_rates`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      body: JSON.stringify(newTaxRate.value),
-    });
+    // Refresh tax rates and close modal
+    await getTaxRates();
+    closeTaxRateModal();
 
-    if (response.ok) {
-      const createdTaxRate = await response.json();
-      taxRates.value.push(createdTaxRate);
-      fetchTaxRates();
-      closeTaxRateModal();
-    } else {
-      console.error('Fehler beim Hinzufügen der Steuerregel');
-    }
+    showSnackbarMessage('Steuerregel erfolgreich hinzugefügt', 'success');
   } catch (error) {
-    console.error('API-Fehler:', error);
+    console.error('Fehler beim Hinzufügen der Steuerregel:', error);
+    showSnackbarMessage('Fehler beim Hinzufügen der Steuerregel', 'error');
   }
 };
 
@@ -1118,8 +1048,8 @@ const totalNetSum = computed(() => {
 });
 
 onMounted(() => {
-  fetchTaxRates();
-  fetchSuppliers();
+  getTaxRates();
+  getSuppliers();
 });
 </script>
 

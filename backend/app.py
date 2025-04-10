@@ -20,7 +20,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
 
-app.register_blueprint(user_bp)
+app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(documents_bp, url_prefix='/api')
 app.register_blueprint(tax_rate_bp, url_prefix='/api')
 app.register_blueprint(uploads_bp, url_prefix='/api')

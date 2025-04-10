@@ -369,7 +369,11 @@
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import API_URL from '@/api';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import DocumentService from '@/services/document.service';
+import SupplierService from '@/services/supplier.service';
+import TaxRateService from '@/services/tax-rate.service';
+import JournalEntryService from '@/services/journal-entry.service';
 
 const router = useRouter();
 
@@ -377,15 +381,6 @@ const router = useRouter();
 const showSnackbar = ref(false);
 const snackbarMessage = ref('');
 const snackbarType = ref('success');
-
-const showSnackbarMessage = (message, type = 'success') => {
-  snackbarMessage.value = message;
-  snackbarType.value = type;
-  showSnackbar.value = true;
-  setTimeout(() => {
-    showSnackbar.value = false;
-  }, 3000);
-};
 
 // Formular-Daten
 const journalEntry = ref({
@@ -418,39 +413,25 @@ const handleClickOutside = (event) => {
 const fetchOpenDocuments = async () => {
   try {
     // Hole Belege
-    const response = await fetch(`${API_URL}/api/documents?status=OPEN`, {
-      credentials: 'include',
-    });
+    const documents = await DocumentService.getOpenDocuments();
 
-    if (response.ok) {
-      const documents = await response.json();
-
-      // Hole für jeden Beleg die zugehörigen Line-Items
-      for (const doc of documents) {
-        try {
-          const lineItemsResponse = await fetch(`${API_URL}/api/documents/${doc.id}/line_items`, {
-            credentials: 'include',
-          });
-
-          if (lineItemsResponse.ok) {
-            const data = await lineItemsResponse.json();
-            // Berechne den Gesamtbetrag aus den Line-Items
-            doc.calculatedTotalAmount = data.line_items.reduce(
-              (sum, item) => sum + parseFloat(item.total_price || 0),
-              0
-            );
-          }
-        } catch (error) {
-          console.error(`Fehler beim Abrufen der Line-Items für Dokument ${doc.id}:`, error);
-          doc.calculatedTotalAmount = 0;
-        }
+    // Hole für jeden Beleg die zugehörigen Line-Items
+    for (const doc of documents) {
+      try {
+        const lineItems = await DocumentService.getDocumentLineItems(doc.id);
+        // Berechne den Gesamtbetrag aus den Line-Items
+        doc.calculatedTotalAmount = lineItems.reduce(
+          (sum, item) => sum + parseFloat(item.total_price || 0),
+          0
+        );
+      } catch (error) {
+        console.error(`Fehler beim Abrufen der Line-Items für Dokument ${doc.id}:`, error);
+        doc.calculatedTotalAmount = 0;
       }
-
-      openDocuments.value = documents;
-      filteredDocuments.value = documents;
-    } else {
-      console.error('Fehler beim Laden der offenen Belege:', response.statusText);
     }
+
+    openDocuments.value = documents;
+    filteredDocuments.value = documents;
   } catch (error) {
     console.error('Fehler beim Abrufen der offenen Belege:', error);
   }
@@ -459,16 +440,7 @@ const fetchOpenDocuments = async () => {
 // Lieferanten abrufen
 const fetchSuppliers = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/suppliers`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      suppliers.value = await response.json();
-    } else {
-      console.error('Fehler beim Abrufen der Lieferanten:', response.statusText);
-    }
+    suppliers.value = await SupplierService.getSuppliers();
   } catch (error) {
     console.error('Fehler beim Abrufen der Lieferanten:', error);
   }
@@ -505,16 +477,7 @@ const taxRates = ref([]);
 // Steuersätze abrufen
 const fetchTaxRates = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/tax_rates`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      taxRates.value = await response.json();
-    } else {
-      console.error('Fehler beim Laden der Steuersätze:', response.statusText);
-    }
+    taxRates.value = await TaxRateService.getTaxRates();
   } catch (error) {
     console.error('Fehler beim Abrufen der Steuersätze:', error);
   }
@@ -522,24 +485,13 @@ const fetchTaxRates = async () => {
 
 // Steuersatz-Prozentsatz anhand der ID abrufen
 const getTaxRatePercentage = (taxRateId) => {
-  const taxRate = taxRates.value.find((rate) => rate.id === taxRateId);
-  return taxRate ? taxRate.percentage : 'Unbekannt';
+  return TaxRateService.getTaxRatePercentage(taxRates.value, taxRateId);
 };
 
 // Belegpositionen für einen ausgewählten Beleg abrufen
 const fetchDocumentLineItems = async (documentId) => {
   try {
-    const response = await fetch(`${API_URL}/api/documents/${documentId}/line_items`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      documentLineItems.value = data.line_items;
-    } else {
-      console.error('Fehler beim Laden der Positionen:', response.statusText);
-    }
+    documentLineItems.value = await DocumentService.getDocumentLineItems(documentId);
   } catch (error) {
     console.error('Fehler beim Abrufen der Positionen:', error);
   }
@@ -586,45 +538,27 @@ onBeforeUnmount(() => {
 
 const submitJournalEntry = async () => {
   try {
-    // CSRF-Token aus Cookies extrahieren
-    const csrfToken = document.cookie
-      .split(';')
-      .find((row) => row.trim().startsWith('csrf_access_token='))
-      ?.split('=')[1];
+    await JournalEntryService.createJournalEntry(journalEntry.value);
 
-    const response = await fetch(`${API_URL}/api/journal-entries`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      body: JSON.stringify(journalEntry.value),
-    });
+    showSnackbarMessage('Buchung erfolgreich erstellt!', 'success');
 
-    if (response.ok) {
-      showSnackbarMessage('Buchung erfolgreich erstellt!', 'success');
-      // Formular zurücksetzen
-      journalEntry.value = {
-        entry_date: new Date().toISOString().substr(0, 10),
-        document_number: '',
-        debit_account: '',
-        credit_account: '',
-        amount: '',
-        description: '',
-      };
+    // Formular zurücksetzen
+    journalEntry.value = {
+      entry_date: new Date().toISOString().substr(0, 10),
+      document_number: '',
+      debit_account: '',
+      credit_account: '',
+      amount: '',
+      description: '',
+    };
 
-      // Optional: Zur Übersichtsseite navigieren
-      setTimeout(() => {
-        router.push({ name: 'journal-entries' });
-      }, 1500);
-    } else {
-      const errorData = await response.json();
-      showSnackbarMessage(errorData.message || 'Fehler beim Erstellen der Buchung', 'error');
-    }
+    // Optional: Zur Übersichtsseite navigieren
+    setTimeout(() => {
+      router.push({ name: 'journal-entries' });
+    }, 1500);
   } catch (error) {
     console.error('Fehler bei der Buchungserstellung:', error);
-    showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten.', 'error');
+    showSnackbarMessage(error.message || 'Ein unerwarteter Fehler ist aufgetreten.', 'error');
   }
 };
 
@@ -670,54 +604,24 @@ const allItemsSelected = computed(() => {
 
 // Ausgewählte Positionen verwenden
 const useSelectedItems = () => {
-  // Setze den Betrag der Buchung auf die Summe der ausgewählten Positionen
   journalEntry.value.amount = selectedItemsTotal.value;
 
-  // Erstelle eine Beschreibung, die die ausgewählten Positionen enthält
-  const selectedItems = documentLineItems.value.filter((item) =>
-    selectedLineItems.value.includes(item.id)
-  );
-
-  const descriptions = selectedItems.map(
-    (item) => `${item.description} (${formatCurrency(item.total_price)})`
-  );
-
-  // Update der Beschreibung mit den ausgewählten Positionen
-  journalEntry.value.description = descriptions.join('\n');
-
-  // Deaktiviere die ausgewählten Positionen für weitere Buchungen
-  const remainingLineItems = documentLineItems.value.filter(
-    (item) => !selectedLineItems.value.includes(item.id)
-  );
-  documentLineItems.value = remainingLineItems;
-
-  // Zurücksetzen der Auswahl
-  selectedLineItems.value = [];
-
-  // Benachrichtigung anzeigen
-  showSnackbarMessage(`${descriptions.length} Position(en) zur Buchung hinzugefügt`, 'success');
+  // Generiere eine sinnvolle Beschreibung basierend auf den ausgewählten Positionen
+  if (selectedLineItems.value.length === 1) {
+    const item = documentLineItems.value.find((i) => i.id === selectedLineItems.value[0]);
+    if (item) {
+      journalEntry.value.description = item.description;
+    }
+  } else if (selectedLineItems.value.length > 1) {
+    journalEntry.value.description = `Buchung für ${selectedLineItems.value.length} Positionen`;
+  }
 };
 
-// Restbetrag buchen
+// Restbetrag separat buchen
 const createRemainingBooking = () => {
-  if (remainingAmount.value <= 0) {
-    showSnackbarMessage('Kein Restbetrag vorhanden', 'error');
-    return;
-  }
-
-  // Erstelle eine neue Buchung mit dem Restbetrag
-  const newJournalEntry = { ...journalEntry.value };
-  newJournalEntry.amount = remainingAmount.value;
-  newJournalEntry.description = `Restbetrag: ${formatCurrency(remainingAmount.value)}`;
-
-  // Formular mit den neuen Werten aktualisieren
-  journalEntry.value = newJournalEntry;
-
-  // Benachrichtigung anzeigen
-  showSnackbarMessage(
-    `Restbetrag von ${formatCurrency(remainingAmount.value)} zur Buchung hinzugefügt`,
-    'success'
-  );
+  journalEntry.value.amount = Math.abs(remainingAmount.value);
+  journalEntry.value.description =
+    remainingAmount.value > 0 ? 'Buchung für Restbetrag' : 'Buchung für Differenzbetrag';
 };
 </script>
 

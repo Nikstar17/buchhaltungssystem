@@ -110,14 +110,6 @@
         <router-link to="/login" class="text-blue-600 hover:underline">Hier einloggen</router-link>
       </p>
     </form>
-    <!-- Snackbar -->
-    <div
-      v-if="showSnackbar"
-      :class="snackbarType === 'success' ? 'bg-green-700' : 'bg-red-700'"
-      class="fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300"
-    >
-      {{ snackbarMessage }}
-    </div>
   </div>
 </template>
 
@@ -125,12 +117,10 @@
 import { ref } from 'vue';
 import API_URL from '@/api';
 import { useRouter } from 'vue-router';
-import {
-  showSnackbar,
-  snackbarMessage,
-  snackbarType,
-  showSnackbarMessage,
-} from '@/composables/useSnackbar';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import UserService from '@/services/user.service';
+
+const router = useRouter();
 
 const email = ref('');
 const password = ref('');
@@ -142,40 +132,25 @@ const postal_code = ref('');
 const city = ref('');
 const country = ref('');
 
-const router = useRouter();
-
 const register = async () => {
   try {
-    const response = await fetch(`${API_URL}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-        first_name: first_name.value,
-        last_name: last_name.value,
-        street: street.value,
-        house_number: house_number.value,
-        postal_code: postal_code.value,
-        city: city.value,
-        country: country.value,
-      }),
-    });
+    const credentials = {
+      email: email.value,
+      password: password.value,
+      first_name: first_name.value,
+      last_name: last_name.value,
+      street: street.value,
+      house_number: house_number.value,
+      postal_code: postal_code.value,
+      city: city.value,
+      country: country.value,
+    };
 
-    const result = await response.json();
-
-    if (response.ok) {
-      localStorage.setItem('access_token', result.access_token);
-      showSnackbarMessage('Registrierung erfolgreich!', 'success');
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.push({ name: 'login' });
-    } else if (response.status === 409) {
-      showSnackbarMessage('Diese E-Mail-Adresse ist bereits registriert.', 'error');
-    } else {
-      showSnackbarMessage('Fehler bei der Registrierung', 'error');
-    }
+    await UserService.register(credentials);
+    router.push({ name: 'dashboard-overview' });
+    showSnackbarMessage('Herzlich Willkommen', 'success');
   } catch (error) {
-    showSnackbarMessage('Fehler bei der Registrierung', 'error');
+    showSnackbarMessage('Fehler beim registrieren', error);
   }
 };
 </script>

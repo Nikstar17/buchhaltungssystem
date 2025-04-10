@@ -73,7 +73,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { PlusIcon } from '@heroicons/vue/24/solid';
-import API_URL from '@/api';
+import DocumentService from '@/services/document.service';
+import SupplierService from '@/services/supplier.service';
 
 const router = useRouter();
 const documents = ref([]);
@@ -82,20 +83,11 @@ const documentLineItems = ref({}); // Speichert Line-Items pro Dokument-ID
 
 const fetchDocuments = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/documents`, {
-      method: 'GET',
-      credentials: 'include',
-    });
+    documents.value = await DocumentService.getDocuments();
+    documents.value.sort((a, b) => new Date(b.beleg_datum) - new Date(a.beleg_datum));
 
-    if (response.ok) {
-      const data = await response.json();
-      documents.value = data.sort((a, b) => new Date(b.beleg_datum) - new Date(a.beleg_datum));
-
-      // Nach dem Laden der Dokumente die Line-Items für jedes Dokument abrufen
-      await fetchAllLineItems();
-    } else {
-      console.error('Fehler beim Laden der Belege:', response.statusText);
-    }
+    // Nach dem Laden der Dokumente die Line-Items für jedes Dokument abrufen
+    await fetchAllLineItems();
   } catch (error) {
     console.error('Fehler beim Abrufen der Belege:', error);
   }
@@ -114,20 +106,8 @@ const fetchAllLineItems = async () => {
 
 const fetchLineItemsForDocument = async (documentId) => {
   try {
-    const response = await fetch(`${API_URL}/api/documents/${documentId}/line_items`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      documentLineItems.value[documentId] = data.line_items;
-    } else {
-      console.error(
-        `Fehler beim Laden der Positionen für Dokument ${documentId}:`,
-        response.statusText
-      );
-    }
+    const lineItems = await DocumentService.getDocumentLineItems(documentId);
+    documentLineItems.value[documentId] = lineItems;
   } catch (error) {
     console.error(`Fehler beim Abrufen der Positionen für Dokument ${documentId}:`, error);
   }
@@ -135,16 +115,7 @@ const fetchLineItemsForDocument = async (documentId) => {
 
 const fetchSuppliers = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/suppliers`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      suppliers.value = await response.json();
-    } else {
-      console.error('Fehler beim Abrufen der Lieferanten:', response.statusText);
-    }
+    suppliers.value = await SupplierService.getSuppliers();
   } catch (error) {
     console.error('Fehler beim Abrufen der Lieferanten:', error);
   }

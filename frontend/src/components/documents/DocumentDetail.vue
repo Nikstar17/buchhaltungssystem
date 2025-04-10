@@ -191,44 +191,6 @@
               </div>
             </div>
           </div>
-
-          <div
-            v-if="showSnackbar"
-            :class="snackbarType === 'success' ? 'bg-green-600/90' : 'bg-red-600/90'"
-            class="fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-xl shadow-lg transition-opacity duration-300 flex items-center"
-          >
-            <svg
-              v-if="snackbarType === 'success'"
-              class="h-5 w-5 mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <svg
-              v-else
-              class="h-5 w-5 mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-            {{ snackbarMessage }}
-          </div>
         </div>
         <div v-else class="text-gray-500 italic mt-4 text-center py-8">
           <svg
@@ -266,37 +228,25 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import API_URL from '@/api';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import {
-  showSnackbar,
-  snackbarMessage,
-  snackbarType,
-  showSnackbarMessage,
-} from '@/composables/useSnackbar';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import DocumentService from '@/services/document.service';
+import SupplierService from '@/services/supplier.service';
+import TaxRateService from '@/services/tax-rate.service';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const route = useRoute();
 const router = useRouter();
 const document = ref(null);
-const suppliers = ref([]); // Assuming suppliers are fetched elsewhere or passed as props
+const suppliers = ref([]);
 const lineItems = ref([]);
-const taxRates = ref([]); // Add taxRates ref
+const taxRates = ref([]);
 
 const fetchDocumentDetails = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/documents/${route.params.id}`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      document.value = await response.json();
-    } else {
-      console.error('Fehler beim Laden der Belegdetails:', response.statusText);
-    }
+    document.value = await DocumentService.getDocuments(route.params.id);
   } catch (error) {
     console.error('Fehler beim Abrufen der Belegdetails:', error);
   }
@@ -304,16 +254,7 @@ const fetchDocumentDetails = async () => {
 
 const fetchSuppliers = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/suppliers`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      suppliers.value = await response.json();
-    } else {
-      console.error('Fehler beim Laden der Lieferanten:', response.statusText);
-    }
+    suppliers.value = await SupplierService.getSuppliers();
   } catch (error) {
     console.error('Fehler beim Abrufen der Lieferanten:', error);
   }
@@ -321,17 +262,7 @@ const fetchSuppliers = async () => {
 
 const fetchLineItems = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/documents/${route.params.id}/line_items`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      lineItems.value = data.line_items;
-    } else {
-      console.error('Fehler beim Laden der Positionen:', response.statusText);
-    }
+    lineItems.value = await DocumentService.getDocumentLineItems(route.params.id);
   } catch (error) {
     console.error('Fehler beim Abrufen der Positionen:', error);
   }
@@ -339,24 +270,14 @@ const fetchLineItems = async () => {
 
 const fetchTaxRates = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/tax_rates`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      taxRates.value = await response.json();
-    } else {
-      console.error('Fehler beim Laden der Steuersätze:', response.statusText);
-    }
+    taxRates.value = await TaxRateService.getTaxRates();
   } catch (error) {
     console.error('Fehler beim Abrufen der Steuersätze:', error);
   }
 };
 
 const getTaxRatePercentage = (taxRateId) => {
-  const taxRate = taxRates.value.find((rate) => rate.id === taxRateId);
-  return taxRate ? taxRate.percentage : 'Unbekannt';
+  return TaxRateService.getTaxRatePercentage(taxRates.value, taxRateId);
 };
 
 const supplierName = computed(() => {
@@ -384,29 +305,19 @@ const renderPage = async (pageNumber) => {
 
 const fetchDocumentFile = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/uploads/base64/${route.params.id}`, {
-      method: 'GET',
-      credentials: 'include',
-    });
+    const data = await DocumentService.getDocumentFileBase64(route.params.id);
+    const { mimetype, file_data } = data;
 
-    if (response.ok) {
-      const data = await response.json();
-      // Update to match the backend response field names
-      const { mimetype, file_data } = data;
-
-      if (mimetype.startsWith('image/')) {
-        fileType.value = 'image';
-        fileUrl.value = `data:${mimetype};base64,${file_data}`;
-      } else if (mimetype === 'application/pdf') {
-        fileType.value = 'pdf';
-        const arrayBuffer = Uint8Array.from(atob(file_data), (c) => c.charCodeAt(0)).buffer;
-        pdfDocument = await pdfjsLib.getDocument({
-          data: arrayBuffer,
-        }).promise;
-        await renderPage(1);
-      }
-    } else {
-      console.error('Fehler beim Laden der Datei:', response.statusText);
+    if (mimetype.startsWith('image/')) {
+      fileType.value = 'image';
+      fileUrl.value = `data:${mimetype};base64,${file_data}`;
+    } else if (mimetype === 'application/pdf') {
+      fileType.value = 'pdf';
+      const arrayBuffer = Uint8Array.from(atob(file_data), (c) => c.charCodeAt(0)).buffer;
+      pdfDocument = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+      }).promise;
+      await renderPage(1);
     }
   } catch (error) {
     console.error('Fehler beim Abrufen der Datei:', error);
@@ -415,31 +326,8 @@ const fetchDocumentFile = async () => {
 
 const deleteDocument = async () => {
   try {
-    const csrfToken = window.document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
-
-    if (!csrfToken) {
-      showSnackbarMessage('CSRF-Token fehlt. Bitte melden Sie sich erneut an.', 'error');
-      return;
-    }
-
-    const response = await fetch(`${API_URL}/api/documents/${document.value.id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken,
-      },
-    });
-
-    if (response.ok) {
-      router.push('/dashboard/documents');
-    } else {
-      const errorData = await response.json();
-      console.error('Fehler beim Löschen des Belegs:', errorData.error);
-      showSnackbarMessage('Fehler beim Löschen des Belegs', 'error');
-    }
+    await DocumentService.deleteDocument(route.params.id);
+    router.push('/dashboard/documents');
   } catch (error) {
     console.error('Fehler beim Löschen des Belegs:', error);
     showSnackbarMessage('Ein unerwarteter Fehler ist aufgetreten', 'error');

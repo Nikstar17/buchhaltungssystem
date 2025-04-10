@@ -36,45 +36,27 @@
 
 <script setup>
 import { ref } from 'vue';
-import API_URL from '@/api';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
 import { useRouter } from 'vue-router';
-import { jwtDecode } from 'jwt-decode';
-import { useUserStore } from '@/stores/user';
+import AuthService from '@/services/auth.service';
 
 const router = useRouter();
-const userStore = useUserStore();
 
 const email = ref('');
 const password = ref('');
 
 const login = async () => {
-  const response = await fetch(`${API_URL}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  try {
+    const credentials = {
       email: email.value,
       password: password.value,
-    }),
-    credentials: 'include',
-  });
+    };
 
-  const data = await response.json();
-
-  if (response.ok) {
-    const decodedToken = jwtDecode(data.access_token);
-    localStorage.setItem('access_token_exp', decodedToken.exp * 1000);
-
-    // Benutzerdaten im UserStore speichern
-    userStore.setEmail(decodedToken.email);
-    userStore.setFirstName(decodedToken.first_name);
-    userStore.setLastName(decodedToken.last_name);
-    if (decodedToken.id) {
-      userStore.setId(decodedToken.id);
-    }
-
+    const response = await AuthService.login(credentials);
     router.push({ name: 'dashboard-overview' });
-  } else {
-    alert('Fehler bei der Anmeldung');
+  } catch (error) {
+    console.error('Login-Fehler:', error);
+    showSnackbarMessage('Fehler beim Anmelden', 'error');
   }
 };
 </script>

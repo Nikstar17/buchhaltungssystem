@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { jwtDecode } from 'jwt-decode';
+import AuthService from '@/services/auth.service';
 import RegisterComp from '@/views/auth/RegisterView.vue';
 import LoginView from '@/views/auth/LoginView.vue';
 import BaseLayout from '@/views/dashboard/BaseLayout.vue';
@@ -11,7 +12,6 @@ import JournalEntryList from '@/components/journalEntries/JournalEntryList.vue';
 import JournalEntryForm from '@/components/journalEntries/JournalEntryForm.vue';
 import SettingsOverview from '@/components/settings/SettingsOverview.vue';
 import UserSettings from '@/components/settings/UserSettings.vue';
-import API_URL from '@/api';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,20 +35,24 @@ const router = createRouter({
       path: '/logout',
       name: 'logout',
       beforeEnter: (to, from, next) => {
-        localStorage.removeItem('access_token');
+        AuthService.logout();
         next({ name: 'login' });
       },
     },
     {
       path: '/dashboard',
-      name: 'dashboard',
       component: BaseLayout,
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'overview', // Neuer Pfadname
-          name: 'dashboard-overview', // Neuer Name
-          component: DashboardOverview, // Neuer Name für die Komponente
+          path: '',
+          name: 'dashboard', // Name wurde zur Default-Route verschoben
+          redirect: { name: 'dashboard-overview' },
+        },
+        {
+          path: 'overview',
+          name: 'dashboard-overview',
+          component: DashboardOverview,
         },
         {
           path: 'documents',
@@ -86,52 +90,36 @@ const router = createRouter({
         },
       ],
     },
+    // Fallback-Route für nicht gefundene Pfade
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'login' },
+    },
   ],
 });
 
 // Navigation Guard
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    const tokenExp = localStorage.getItem('access_token_exp');
-    const now = Date.now();
+    // Prüfen, ob Token vorhanden und gültig ist
+    if (AuthService.isLoggedIn() && !AuthService.isTokenExpired()) {
+      return next();
+    }
 
-    if (tokenExp && now < tokenExp) {
-      next(); // Token is still valid
-    } else {
+    // Wenn Token vorhanden aber abgelaufen, versuche Refresh
+    if (AuthService.isLoggedIn()) {
       try {
-        const csrfToken = document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('csrf_refresh_token='))
-          ?.split('=')[1];
-
-        if (!csrfToken) {
-          console.error('CSRF-Token fehlt.');
-          next({ name: 'login' });
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'X-CSRF-TOKEN': csrfToken,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const decodedToken = jwtDecode(data.access_token);
-          localStorage.setItem('access_token_exp', decodedToken.exp * 1000); // Update expiration time
-          next();
-        } else {
-          console.error('Token konnte nicht erneuert werden. Redirecting to login.');
-          next({ name: 'login' });
-        }
+        await AuthService.refreshToken();
+        // Nach Refresh direkt weitergehen
+        return next();
       } catch (error) {
-        console.error('Fehler bei der Token-Erneuerung:', error);
-        next({ name: 'login' });
+        console.error('Token konnte nicht aktualisiert werden:', error);
+        return next({ name: 'login' });
       }
     }
+
+    // Kein Token vorhanden, zur Login-Seite weiterleiten
+    return next({ name: 'login' });
   } else {
     next();
   }
