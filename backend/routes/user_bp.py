@@ -8,9 +8,10 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     unset_jwt_cookies,
 )
-from models import db, User
+from models import db, User, ChartOfAccounts, Account, UserChartOfAccountSettings
 import os
 from cryptography.fernet import Fernet
+from uuid import UUID
 
 user_bp = Blueprint("user_bp", __name__)
 
@@ -52,12 +53,14 @@ def register_user():
         house_number=encrypt(data["house_number"]),
         postal_code=encrypt(data["postal_code"]),
         city=encrypt(data["city"]),
-        country=encrypt(data["country"]),
+        country=encrypt(data["country"])
     )
 
     try:
+        # Benutzer zur Datenbank hinzufügen
         db.session.add(new_user)
         db.session.commit()
+
         return (
             jsonify(
                 {"message": "User registered successfully", "user_id": str(new_user.id)}
@@ -66,7 +69,7 @@ def register_user():
         )
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "An error occurred while registering the user"}), 500
+        return jsonify({"error": "An error occurred while registering the user: " + str(e)}), 500
 
 
 @user_bp.route("/login", methods=["POST"])
@@ -123,6 +126,7 @@ def get_current_user():
                 "postal_code": decrypt(user.postal_code),
                 "city": decrypt(user.city),
                 "country": decrypt(user.country),
+                "chart_of_accounts_id": str(user.chart_of_accounts_id) if user.chart_of_accounts_id else None
             }
         ),
         200,
@@ -154,6 +158,19 @@ def update_user():
     update_field("city")
     update_field("country")
 
+    # Verarbeite chart_of_accounts_id, wenn vorhanden
+    chart_of_accounts_id = data.get("chart_of_accounts_id")
+    if chart_of_accounts_id:
+        try:
+            # Überprüfe, ob der Kontenrahmen existiert
+            chart = ChartOfAccounts.query.get(UUID(chart_of_accounts_id))
+            if not chart:
+                return jsonify({"error": "Kontenrahmen nicht gefunden"}), 404
+            # Setze den Kontenrahmen für den Benutzer
+            user.chart_of_accounts_id = UUID(chart_of_accounts_id)
+        except ValueError:
+            return jsonify({"error": "Ungültige Kontenrahmen-ID"}), 400
+
     try:
         db.session.commit()
 
@@ -173,7 +190,8 @@ def update_user():
             "user": {
                 "email": user.email,
                 "first_name": decrypt(user.first_name),
-                "last_name": decrypt(user.last_name)
+                "last_name": decrypt(user.last_name),
+                "chart_of_accounts_id": str(user.chart_of_accounts_id) if user.chart_of_accounts_id else None
             }
         })
 

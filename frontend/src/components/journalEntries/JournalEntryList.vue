@@ -34,9 +34,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
 import { PlusIcon } from '@heroicons/vue/24/solid';
-import API_URL from '@/api';
 </script>
 
 <style scoped></style>

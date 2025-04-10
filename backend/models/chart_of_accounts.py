@@ -24,7 +24,6 @@ class ChartOfAccounts(db.Model):
     is_standard = Column(
         Boolean, nullable=False, default=False
     )  # Ist ein Standard-Kontenrahmen
-    is_active = Column(Boolean, nullable=False, default=True)  # Ist aktiv
 
     name = Column(String, nullable=False)  # Name des Kontenrahmens (z.B. "SKR04")
     description = Column(Text, nullable=True)  # Beschreibung

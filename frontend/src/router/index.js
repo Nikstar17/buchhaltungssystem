@@ -12,6 +12,7 @@ import JournalEntryList from '@/components/journalEntries/JournalEntryList.vue';
 import JournalEntryForm from '@/components/journalEntries/JournalEntryForm.vue';
 import SettingsOverview from '@/components/settings/SettingsOverview.vue';
 import UserSettings from '@/components/settings/UserSettings.vue';
+import ChartOfAccountsSettings from '@/components/settings/ChartOfAccountsSettings.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,6 +88,11 @@ const router = createRouter({
           path: 'settings/profile',
           name: 'user-settings',
           component: UserSettings,
+        },
+        {
+          path: 'settings/chart-of-accounts',
+          name: 'settings-chart-of-accounts',
+          component: ChartOfAccountsSettings,
         },
       ],
     },

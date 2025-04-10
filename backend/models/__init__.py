@@ -27,4 +27,5 @@ from .supplier import Supplier
 from .tag import Tag
 from .tax_rate import TaxRate
 from .upload import Upload
+from .user_chart_of_account_settings import UserChartOfAccountSettings
 from .user import User

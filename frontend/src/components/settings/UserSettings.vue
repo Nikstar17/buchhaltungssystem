@@ -8,18 +8,6 @@
         </p>
       </div>
 
-      <!-- Benachrichtigungen -->
-      <div
-        v-if="notification.show"
-        :class="`mb-4 p-4 rounded-lg ${
-          notification.type === 'success'
-            ? 'bg-green-100 text-green-700'
-            : 'bg-red-100 text-red-700'
-        }`"
-      >
-        {{ notification.message }}
-      </div>
-
       <!-- Hauptinhalt in Karten -->
       <div class="space-y-6">
         <!-- Persönliche Informationen -->
@@ -82,17 +70,6 @@
                     v-model="personalInfo.email"
                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
-                  />
-                </div>
-                <div>
-                  <label for="phone" class="block text-sm font-medium text-gray-700 mb-1"
-                    >Telefon</label
-                  >
-                  <input
-                    type="tel"
-                    id="phone"
-                    v-model="personalInfo.phone"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -280,26 +257,13 @@
 
         <!-- Zurück-Button -->
         <div class="mt-6 flex justify-start">
-          <button
-            @click="goBack"
-            class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 flex items-center"
+          <RouterLink
+            :to="{ name: 'settings' }"
+            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center space-x-2"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Zurück zu Einstellungen
-          </button>
+            <ArrowLongLeftIcon class="w-5 h-5" />
+            <span>Zurück zu Einstellungen</span>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -309,9 +273,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import API_URL from '@/api';
-import { jwtDecode } from 'jwt-decode';
 import { useUserStore } from '@/stores/user';
+import { showSnackbarMessage } from '@/composables/useSnackbar';
+import { ApiService, AuthService } from '@/services';
+import { ArrowLongLeftIcon } from '@heroicons/vue/24/solid';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -321,7 +286,6 @@ const personalInfo = ref({
   firstName: '',
   lastName: '',
   email: '',
-  phone: '',
 });
 
 // Passwortdaten
@@ -340,11 +304,6 @@ const notificationSettings = ref({
 
 // Status-Tracking
 const isSubmitting = ref(false);
-const notification = ref({
-  show: false,
-  message: '',
-  type: 'success',
-});
 
 // Computed Properties
 const passwordsMatch = computed(() => {
@@ -358,94 +317,61 @@ const isPasswordValid = computed(() => {
   return passwordRegex.test(password);
 });
 
-// Lade Benutzerdaten beim Initialisieren der Komponente
+// Benutzerdaten laden
 onMounted(async () => {
   try {
-    const response = await fetch(`${API_URL}/user`, {
-      method: 'GET',
-      credentials: 'include',
-    });
+    const userData = await ApiService.get('/api/user');
 
-    if (response.ok) {
-      const userData = await response.json();
-      personalInfo.value = {
-        firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
+    personalInfo.value = {
+      firstName: userData.first_name || '',
+      lastName: userData.last_name || '',
+      email: userData.email || '',
+      phone: userData.phone || '',
+    };
+
+    // Benachrichtigungseinstellungen laden
+    if (userData.notification_settings) {
+      notificationSettings.value = {
+        email: userData.notification_settings.email ?? true,
+        invoices: userData.notification_settings.invoices ?? true,
+        systemUpdates: userData.notification_settings.system_updates ?? false,
       };
-
-      // Lade Benachrichtigungseinstellungen
-      if (userData.notification_settings) {
-        notificationSettings.value = {
-          email: userData.notification_settings.email || true,
-          invoices: userData.notification_settings.invoices || true,
-          systemUpdates: userData.notification_settings.system_updates || false,
-        };
-      }
-    } else {
-      showNotification('Fehler beim Laden der Benutzerdaten.', 'error');
     }
   } catch (error) {
     console.error('Fehler beim Laden der Benutzerdaten:', error);
-    showNotification('Fehler beim Laden der Benutzerdaten.', 'error');
+    showSnackbarMessage('Fehler beim Laden der Benutzerdaten.', 'error');
   }
 });
 
 // Persönliche Informationen aktualisieren
 const updatePersonalInfo = async () => {
   if (isSubmitting.value) return;
-
   isSubmitting.value = true;
+
   try {
-    const csrfToken = window.document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrf_access_token='))
-      ?.split('=')[1];
+    const userData = {
+      first_name: personalInfo.value.firstName,
+      last_name: personalInfo.value.lastName,
+      email: personalInfo.value.email,
+      phone: personalInfo.value.phone,
+    };
 
-    const response = await fetch(`${API_URL}/user`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        first_name: personalInfo.value.firstName,
-        last_name: personalInfo.value.lastName,
-        email: personalInfo.value.email,
-        phone: personalInfo.value.phone,
-      }),
-    });
+    const response = await ApiService.put('/api/user', userData);
 
-    if (response.ok) {
-      const responseData = await response.json();
-      showNotification('Persönliche Informationen wurden erfolgreich aktualisiert.', 'success');
+    showSnackbarMessage('Persönliche Informationen wurden erfolgreich aktualisiert.', 'success');
 
-      // Aktualisierte Benutzerdaten in den UserStore speichern
-      if (responseData.user) {
-        userStore.setFirstName(responseData.user.first_name);
-        userStore.setLastName(responseData.user.last_name);
-        userStore.setEmail(responseData.user.email);
-      }
-
-      // Token Ablaufzeit aktualisieren, falls ein neues Token gesendet wurde
-      if (responseData.access_token) {
-        const tokenData = jwtDecode(responseData.access_token);
-        if (tokenData.exp) {
-          localStorage.setItem('access_token_exp', tokenData.exp * 1000);
-        }
-      }
-    } else {
-      const errorData = await response.json();
-      showNotification(
-        errorData.message || 'Fehler beim Aktualisieren der persönlichen Informationen.',
-        'error'
-      );
+    // Aktualisiere den UserStore mit den neuen Daten
+    if (response.user) {
+      userStore.setFirstName(response.user.first_name);
+      userStore.setLastName(response.user.last_name);
+      userStore.setEmail(response.user.email);
     }
   } catch (error) {
     console.error('Fehler beim Aktualisieren der persönlichen Informationen:', error);
-    showNotification('Fehler beim Aktualisieren der persönlichen Informationen.', 'error');
+    showSnackbarMessage(
+      error.message || 'Fehler beim Aktualisieren der persönlichen Informationen.',
+      'error'
+    );
   } finally {
     isSubmitting.value = false;
   }
@@ -455,55 +381,37 @@ const updatePersonalInfo = async () => {
 const updatePassword = async () => {
   if (isSubmitting.value) return;
 
+  // Validierung
   if (!passwordsMatch.value) {
-    showNotification('Passwörter stimmen nicht überein.', 'error');
+    showSnackbarMessage('Passwörter stimmen nicht überein.', 'error');
     return;
   }
 
   if (!isPasswordValid.value) {
-    showNotification('Das Passwort entspricht nicht den Anforderungen.', 'error');
+    showSnackbarMessage('Das Passwort entspricht nicht den Anforderungen.', 'error');
     return;
   }
 
   isSubmitting.value = true;
   try {
-    const response = await fetch(`${API_URL}/api/user/password`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        current_password: passwordData.value.currentPassword,
-        new_password: passwordData.value.newPassword,
-      }),
-    });
+    const passwordUpdateData = {
+      current_password: passwordData.value.currentPassword,
+      new_password: passwordData.value.newPassword,
+    };
 
-    if (response.ok) {
-      const responseData = await response.json();
-      showNotification('Passwort wurde erfolgreich aktualisiert.', 'success');
+    await AuthService.changePassword(passwordUpdateData);
 
-      // Passwortfelder zurücksetzen
-      passwordData.value = {
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      };
+    showSnackbarMessage('Passwort wurde erfolgreich aktualisiert.', 'success');
 
-      // Token Ablaufzeit aktualisieren, falls ein neues Token gesendet wurde
-      if (responseData.access_token) {
-        const tokenData = jwtDecode(responseData.access_token);
-        if (tokenData.exp) {
-          localStorage.setItem('access_token_exp', tokenData.exp * 1000);
-        }
-      }
-    } else {
-      const errorData = await response.json();
-      showNotification(errorData.message || 'Fehler beim Aktualisieren des Passworts.', 'error');
-    }
+    // Passwortfelder zurücksetzen
+    passwordData.value = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
   } catch (error) {
     console.error('Fehler beim Aktualisieren des Passworts:', error);
-    showNotification('Fehler beim Aktualisieren des Passworts.', 'error');
+    showSnackbarMessage(error.message || 'Fehler beim Aktualisieren des Passworts.', 'error');
   } finally {
     isSubmitting.value = false;
   }
@@ -515,58 +423,32 @@ const updateNotificationSettings = async () => {
 
   isSubmitting.value = true;
   try {
-    const response = await fetch(`${API_URL}/api/user/notifications`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+    await ApiService.put('/api/user/notifications', {
+      notification_settings: {
+        email: notificationSettings.value.email,
+        invoices: notificationSettings.value.invoices,
+        system_updates: notificationSettings.value.systemUpdates,
       },
-      credentials: 'include',
-      body: JSON.stringify({
-        notification_settings: {
-          email: notificationSettings.value.email,
-          invoices: notificationSettings.value.invoices,
-          system_updates: notificationSettings.value.systemUpdates,
-        },
-      }),
     });
 
-    if (response.ok) {
-      showNotification(
-        'Benachrichtigungseinstellungen wurden erfolgreich aktualisiert.',
-        'success'
-      );
-    } else {
-      const errorData = await response.json();
-      showNotification(
-        errorData.message || 'Fehler beim Aktualisieren der Benachrichtigungseinstellungen.',
-        'error'
-      );
-    }
+    showSnackbarMessage(
+      'Benachrichtigungseinstellungen wurden erfolgreich aktualisiert.',
+      'success'
+    );
   } catch (error) {
     console.error('Fehler beim Aktualisieren der Benachrichtigungseinstellungen:', error);
-    showNotification('Fehler beim Aktualisieren der Benachrichtigungseinstellungen.', 'error');
+    showSnackbarMessage(
+      error.message || 'Fehler beim Aktualisieren der Benachrichtigungseinstellungen.',
+      'error'
+    );
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// Benachrichtigung anzeigen
-const showNotification = (message, type = 'success') => {
-  notification.value = {
-    show: true,
-    message,
-    type,
-  };
-
-  // Benachrichtigung nach 5 Sekunden ausblenden
-  setTimeout(() => {
-    notification.value.show = false;
-  }, 5000);
-};
-
 // Zurück zur Einstellungsübersicht
 const goBack = () => {
-  router.push('/settings');
+  router.push({ name: 'settings' });
 };
 </script>
 
